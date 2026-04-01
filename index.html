@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Gym Tracker</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #22c55e;
+      --accent-2: #38bdf8;
+      --danger: #ef4444;
+      --border: #334155;
+      --shadow: 0 10px 24px rgba(0,0,0,.25);
+      --radius: 14px;
+      --tap: 48px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { padding: 14px; }
+    .app { max-width: 850px; margin: 0 auto; }
+    .topbar {
+      position: sticky; top: 0; z-index: 10;
+      background: linear-gradient(to bottom, rgba(15,23,42,.96), rgba(15,23,42,.84));
+      backdrop-filter: blur(8px);
+      padding: 8px 0 12px;
+      margin-bottom: 10px;
+    }
+    h1 { margin: 0 0 4px; font-size: 1.4rem; }
+    .sub { color: var(--muted); font-size: .95rem; }
+    .toolbar {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;
+    }
+    button {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      min-height: var(--tap);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: .95rem;
+      cursor: pointer;
+    }
+    button.primary { background: var(--accent); color: #052e16; border-color: transparent; font-weight: 700; }
+    button.warn { background: transparent; color: #fecaca; border-color: #7f1d1d; }
+
+    .workout {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .workout-header {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border: 0;
+      border-radius: 0;
+      text-align: left;
+    }
+    .workout-title { font-size: 1.08rem; font-weight: 700; }
+    .workout-sub { color: var(--muted); font-size: .88rem; margin-top: 4px; }
+    .chev { color: var(--muted); font-size: 1.2rem; }
+    .workout-body { display: none; padding: 12px; border-top: 1px solid var(--border); }
+    .workout.open .workout-body { display: block; }
+    .workout.open .chev { transform: rotate(180deg); }
+
+    .exercise {
+      border: 1px solid var(--border);
+      background: #0b1220;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .exercise-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+    }
+    .exercise-main {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .name-btn {
+      min-height: var(--tap);
+      background: transparent;
+      border: 0;
+      padding: 0;
+      text-align: left;
+      font-size: 1rem;
+      font-weight: 650;
+      color: var(--text);
+    }
+    .summary { color: var(--muted); font-size: .85rem; margin-top: 4px; }
+    .set-boxes {
+      display: flex; gap: 6px; align-items: center; justify-content: flex-end; flex-wrap: wrap;
+    }
+    .set-pill {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 38px; height: 38px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      position: relative;
+      overflow: hidden;
+    }
+    .set-pill input {
+      position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+    }
+    .set-pill span { font-size: .85rem; color: var(--muted); }
+    .set-pill:has(input:checked) { background: var(--accent); border-color: var(--accent); }
+    .set-pill:has(input:checked) span { color: #052e16; font-weight: 700; }
+
+    .actions {
+      display: flex; gap: 6px; align-items: center; justify-content: flex-end; margin-top: 8px;
+    }
+    .mini-btn {
+      min-height: 38px; min-width: 38px; padding: 0 10px; border-radius: 10px; font-size: .9rem;
+    }
+
+    .exercise-body { display: none; padding: 0 10px 10px; border-top: 1px solid rgba(148,163,184,.15); }
+    .exercise.open .exercise-body { display: block; }
+    .meta-grid {
+      display: grid; gap: 10px; grid-template-columns: 1fr 140px; align-items: end; margin-top: 10px;
+    }
+    label { font-size: .82rem; color: var(--muted); display: block; margin-bottom: 6px; }
+    input[type="number"] {
+      width: 100%; min-height: var(--tap);
+      border-radius: 10px; border: 1px solid var(--border);
+      background: var(--panel-2); color: var(--text); padding: 10px 12px; font-size: 1rem;
+    }
+    .hint {
+      margin-top: 10px; color: var(--muted); font-size: .9rem; line-height: 1.35;
+    }
+    .info-panel {
+      display: none; margin-top: 10px; padding: 10px; border-radius: 10px;
+      background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.22);
+    }
+    .info-panel.open { display: block; }
+    ul { margin: 8px 0 0 18px; padding: 0; }
+    li { margin-bottom: 6px; }
+
+    .footer-note {
+      color: var(--muted); font-size: .85rem; padding: 6px 2px 30px;
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 10px; }
+      .exercise-head { grid-template-columns: 1fr; }
+      .exercise-main { grid-template-columns: 1fr; }
+      .set-boxes { justify-content: flex-start; }
+      .meta-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <h1>Gym Tracker</h1>
+      <div class="sub">Phase 1. Tap a workout. Tap an exercise name for reps and weight. Tap (i) for form notes.</div>
+      <div class="toolbar">
+        <button class="primary" id="expandTodayBtn">Open Lift B</button>
+        <button id="collapseAllBtn">Collapse all</button>
+        <button class="warn" id="resetWeekBtn">Reset checkmarks</button>
+      </div>
+    </div>
+
+    <div id="workouts"></div>
+
+    <div class="footer-note">
+      Saved on this device with local storage. If you clear browser/site data, your checkmarks and weights may reset.
+    </div>
+  </div>
+
+  <script>
+    const appKey = 'ymca-phase1-tracker-v1';
+
+    const data = [
+      {
+        id: 'lift-a',
+        title: 'Lift A',
+        subtitle: 'Leg press, chest press, row, RDL, step-ups, plank',
+        exercises: [
+          {
+            id: 'leg-press',
+            name: 'Leg Press',
+            sets: 3,
+            summary: '3 x 10',
+            reps: '3 sets of 10',
+            details: 'Feet shoulder-width on platform. Lower until knees are bent comfortably, then press back up. Keep lower back against the pad.',
+            info: [
+              'Set feet about shoulder width.',
+              'Lower under control until the knee bend feels comfortable.',
+              'Press back up without snapping knees locked.',
+              'If the knee feels weird, shorten the depth.'
+            ]
+          },
+          {
+            id: 'chest-press',
+            name: 'Chest Press or DB Bench',
+            sets: 3,
+            summary: '3 x 8 to 10',
+            reps: '3 sets of 8 to 10',
+            details: 'Push weight away from your chest. Lower slowly. Keep shoulders down and controlled.',
+            info: [
+              'Machine version is easiest to learn again.',
+              'If using dumbbells, feet flat and wrists stacked over elbows.',
+              'Do not bounce at the bottom.'
+            ]
+          },
+          {
+            id: 'seated-row',
+            name: 'Seated Row',
+            sets: 3,
+            summary: '3 x 10',
+            reps: '3 sets of 10',
+            details: 'Pull handle toward lower ribs. Squeeze shoulder blades back. No body swinging.',
+            info: [
+              'Start with arms long.',
+              'Pull elbows back toward your sides.',
+              'Pause briefly, then return slow.'
+            ]
+          },
+          {
+            id: 'rdl',
+            name: 'DB Romanian Deadlift',
+            sets: 2,
+            summary: '2 x 10',
+            reps: '2 sets of 10',
+            details: 'Hold dumbbells in front of thighs. Soft knees. Push hips back, keep back flat, then stand tall again.',
+            info: [
+              'This is a hip hinge, not a squat.',
+              'Dumbbells stay close to legs.',
+              'You should feel hamstrings and glutes, not low back.'
+            ]
+          },
+          {
+            id: 'step-ups',
+            name: 'Low Step-Ups',
+            sets: 2,
+            summary: '2 x 8 each leg',
+            reps: '2 sets of 8 each leg',
+            details: 'Use a low step. Step up, stand tall, step down under control. Use support if needed.',
+            info: [
+              'Keep the step low to start.',
+              'Try not to launch off the back leg.',
+              'Slow and controlled is the point here.'
+            ]
+          },
+          {
+            id: 'plank',
+            name: 'Plank',
+            sets: 3,
+            summary: '3 x 20 to 30 sec',
+            reps: '3 rounds of 20 to 30 seconds',
+            details: 'Elbows under shoulders. Body straight. Squeeze abs and glutes. Do not let hips sag.',
+            info: [
+              'If full plank is too much, elevate hands on bench.',
+              'Think straight line from shoulders to heels.'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'cardio-1',
+        title: 'Cardio 1',
+        subtitle: 'Easy no-impact cardio day',
+        exercises: [
+          {
+            id: 'steady-cardio-1',
+            name: 'Bike, Elliptical, or Incline Walk',
+            sets: 1,
+            summary: '20 to 35 min',
+            reps: '20 to 35 minutes',
+            details: 'Easy to moderate pace. You should still be able to talk while doing it.',
+            info: [
+              'This is not a test day.',
+              'Goal is to build engine without impact.',
+              'If legs feel beat up, keep it easy and shorter.'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'lift-b',
+        title: 'Lift B',
+        subtitle: 'Goblet squat, pulldown, shoulder press, ham curl, glute bridge, core',
+        exercises: [
+          {
+            id: 'goblet-squat',
+            name: 'Goblet Squat to Box/Bench',
+            sets: 3,
+            summary: '3 x 8 to 10',
+            reps: '3 sets of 8 to 10',
+            details: 'Hold one dumbbell at your chest. Sit back to a box or bench, lightly touch, then stand up.',
+            info: [
+              'Use the box or bench to control depth.',
+              'Knees track over feet.',
+              'Sit back, do not dive straight down.',
+              'If knee feels off, use a higher box.'
+            ]
+          },
+          {
+            id: 'lat-pulldown',
+            name: 'Lat Pulldown',
+            sets: 3,
+            summary: '3 x 10',
+            reps: '3 sets of 10',
+            details: 'Pull the bar to upper chest with chest up. Control it back overhead. Do not pull behind the neck.',
+            info: [
+              'Start with shoulders down, not shrugged.',
+              'Think elbows down toward ribs.',
+              'No jerking or body rocking.'
+            ]
+          },
+          {
+            id: 'shoulder-press',
+            name: 'Seated DB Shoulder Press',
+            sets: 2,
+            summary: '2 x 10',
+            reps: '2 sets of 10',
+            details: 'Start dumbbells by shoulders and press overhead. Lower under control.',
+            info: [
+              'Stay tall in the seat.',
+              'Do not over-arch the low back.',
+              'Machine shoulder press is a fine swap.'
+            ]
+          },
+          {
+            id: 'hamstring-curl',
+            name: 'Hamstring Curl',
+            sets: 3,
+            summary: '3 x 10 to 12',
+            reps: '3 sets of 10 to 12',
+            details: 'Bend the knees to pull the pad in, then return slowly. You should feel this in the back of the thighs.',
+            info: [
+              'Use seated or lying machine.',
+              'Control the lowering part.',
+              'No need to go heavy early.'
+            ]
+          },
+          {
+            id: 'glute-bridge',
+            name: 'Glute Bridge / Hip Thrust',
+            sets: 2,
+            summary: '2 x 12',
+            reps: '2 sets of 12',
+            details: 'Feet flat. Drive hips up and squeeze glutes at the top. Avoid cranking low back.',
+            info: [
+              'Bodyweight is enough to start.',
+              'Pause briefly at the top.',
+              'Focus on glutes, not low back.'
+            ]
+          },
+          {
+            id: 'dead-bug',
+            name: 'Dead Bug or Side Plank',
+            sets: 3,
+            summary: '2 to 3 rounds',
+            reps: '2 to 3 rounds',
+            details: 'Pick one. Dead bug: opposite arm and leg extend while low back stays down. Side plank: straight body line, hold steady.',
+            info: [
+              'Dead bug is usually the easier starting point.',
+              'For side plank, keep elbow under shoulder.',
+              'Core should feel stable, not shaky chaos.'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'cardio-2',
+        title: 'Cardio 2',
+        subtitle: 'Easy no-impact cardio day',
+        exercises: [
+          {
+            id: 'steady-cardio-2',
+            name: 'Bike, Elliptical, or Incline Walk',
+            sets: 1,
+            summary: '20 to 35 min',
+            reps: '20 to 35 minutes',
+            details: 'Easy to moderate pace. You should still be able to talk while doing it.',
+            info: [
+              'Same as Cardio 1.',
+              'Pick whatever feels best on the knee and shins.',
+              'This should help recovery, not bury you.'
+            ]
+          }
+        ]
+      },
+      {
+        id: 'lift-c',
+        title: 'Lift C',
+        subtitle: 'Split squat/lunge, incline press, row, leg curl/ext, calves, core',
+        exercises: [
+          {
+            id: 'split-squat',
+            name: 'Assisted Split Squat / Reverse Lunge',
+            sets: 2,
+            summary: '2 x 8 each leg',
+            reps: '2 sets of 8 each leg',
+            details: 'One foot forward, one back. Lower under control and stand up. Hold support if needed.',
+            info: [
+              'Reverse lunge is often a little friendlier on knees.',
+              'Keep the range shallow at first if needed.',
+              'Balance support is fine.'
+            ]
+          },
+          {
+            id: 'incline-press',
+            name: 'Incline DB Bench / Machine Press',
+            sets: 3,
+            summary: '3 x 8 to 10',
+            reps: '3 sets of 8 to 10',
+            details: 'Press from a slight incline. Lower slow and controlled.',
+            info: [
+              'Same idea as chest press, just a different angle.',
+              'Do not rush the lowering part.'
+            ]
+          },
+          {
+            id: 'row-c',
+            name: 'Cable or Machine Row',
+            sets: 3,
+            summary: '3 x 10',
+            reps: '3 sets of 10',
+            details: 'Pull toward torso and squeeze shoulder blades back. No jerking.',
+            info: [
+              'Chest up.',
+              'Elbows drive back.',
+              'Return slow.'
+            ]
+          },
+          {
+            id: 'leg-curl-ext',
+            name: 'Leg Curl or Light Leg Extension',
+            sets: 2,
+            summary: '2 x 12',
+            reps: '2 sets of 12',
+            details: 'Choose curl or light extension. If extension bugs the knee, skip it.',
+            info: [
+              'Smooth reps only.',
+              'Go light on extension early.'
+            ]
+          },
+          {
+            id: 'calf-raises',
+            name: 'Calf Raises',
+            sets: 3,
+            summary: '3 x 12 to 15',
+            reps: '3 sets of 12 to 15',
+            details: 'Rise onto toes, pause, lower slowly.',
+            info: [
+              'Machine or bodyweight both work.',
+              'Slow lowering is useful for your lower legs.'
+            ]
+          },
+          {
+            id: 'pallof',
+            name: 'Pallof Press / Cable Core',
+            sets: 3,
+            summary: '2 to 3 sets',
+            reps: '2 to 3 sets',
+            details: 'Stand sideways to cable, press straight out, resist rotation.',
+            info: [
+              'This is anti-rotation core work.',
+              'Keep hips and shoulders square.'
+            ]
+          }
+        ]
+      }
+    ];
+
+    function loadState() {
+      try {
+        return JSON.parse(localStorage.getItem(appKey)) || { checks: {}, weights: {} };
+      } catch {
+        return { checks: {}, weights: {} };
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(appKey, JSON.stringify(state));
+    }
+
+    const state = loadState();
+
+    function render() {
+      const container = document.getElementById('workouts');
+      container.innerHTML = data.map(workout => `
+        <section class="workout" id="${workout.id}">
+          <button class="workout-header" data-toggle-workout="${workout.id}">
+            <div>
+              <div class="workout-title">${workout.title}</div>
+              <div class="workout-sub">${workout.subtitle}</div>
+            </div>
+            <div class="chev">▾</div>
+          </button>
+          <div class="workout-body">
+            ${workout.exercises.map(ex => `
+              <div class="exercise" id="${workout.id}-${ex.id}">
+                <div class="exercise-head">
+                  <div class="exercise-main">
+                    <button class="name-btn" data-toggle-exercise="${workout.id}-${ex.id}">
+                      <div>${ex.name}</div>
+                      <div class="summary">${ex.summary}</div>
+                    </button>
+                    <div class="set-boxes">
+                      ${Array.from({length: ex.sets}, (_, i) => {
+                        const key = `${workout.id}.${ex.id}.set${i+1}`;
+                        return `
+                          <label class="set-pill">
+                            <input type="checkbox" data-check="${key}" ${state.checks[key] ? 'checked' : ''}>
+                            <span>${i+1}</span>
+                          </label>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                  <div class="actions">
+                    <button class="mini-btn" data-toggle-info="${workout.id}-${ex.id}">(i)</button>
+                  </div>
+                </div>
+                <div class="exercise-body">
+                  <div class="meta-grid">
+                    <div>
+                      <label>Reps / target</label>
+                      <div>${ex.reps}</div>
+                      <div class="hint">${ex.details}</div>
+                    </div>
+                    <div>
+                      <label for="w-${workout.id}-${ex.id}">Last weight used</label>
+                      <input id="w-${workout.id}-${ex.id}" type="number" step="5" inputmode="decimal" placeholder="0" value="${state.weights[`${workout.id}.${ex.id}`] ?? ''}" data-weight="${workout.id}.${ex.id}">
+                    </div>
+                  </div>
+                  <div class="info-panel" id="info-${workout.id}-${ex.id}">
+                    <strong>How to do it</strong>
+                    <ul>
+                      ${ex.info.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      `).join('');
+
+      bindEvents();
+    }
+
+    function bindEvents() {
+      document.querySelectorAll('[data-toggle-workout]').forEach(btn => {
+        btn.onclick = () => {
+          const section = document.getElementById(btn.dataset.toggleWorkout);
+          section.classList.toggle('open');
+        };
+      });
+
+      document.querySelectorAll('[data-toggle-exercise]').forEach(btn => {
+        btn.onclick = () => {
+          const ex = document.getElementById(btn.dataset.toggleExercise);
+          ex.classList.toggle('open');
+        };
+      });
+
+      document.querySelectorAll('[data-toggle-info]').forEach(btn => {
+        btn.onclick = () => {
+          const panel = document.getElementById(`info-${btn.dataset.toggleInfo}`);
+          panel.classList.toggle('open');
+        };
+      });
+
+      document.querySelectorAll('[data-check]').forEach(box => {
+        box.onchange = () => {
+          state.checks[box.dataset.check] = box.checked;
+          saveState();
+        };
+      });
+
+      document.querySelectorAll('[data-weight]').forEach(input => {
+        input.oninput = () => {
+          state.weights[input.dataset.weight] = input.value;
+          saveState();
+        };
+      });
+    }
+
+    document.getElementById('collapseAllBtn').onclick = () => {
+      document.querySelectorAll('.workout').forEach(el => el.classList.remove('open'));
+      document.querySelectorAll('.exercise').forEach(el => el.classList.remove('open'));
+      document.querySelectorAll('.info-panel').forEach(el => el.classList.remove('open'));
+    };
+
+    document.getElementById('expandTodayBtn').onclick = () => {
+      document.getElementById('lift-b')?.classList.add('open');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    document.getElementById('resetWeekBtn').onclick = () => {
+      if (!confirm('Reset all set checkmarks? Weights will stay saved.')) return;
+      state.checks = {};
+      saveState();
+      render();
+    };
+
+    render();
+  </script>
+</body>
+</html>
