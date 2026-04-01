@@ -12,29 +12,45 @@
       --text: #e5e7eb;
       --muted: #94a3b8;
       --accent: #22c55e;
-      --accent-2: #38bdf8;
-      --danger: #ef4444;
       --border: #334155;
       --shadow: 0 10px 24px rgba(0,0,0,.25);
       --radius: 14px;
       --tap: 48px;
+      --free: #2563eb;
+      --machine: #dc2626;
+      --home: #facc15;
+      --home-text: #1f2937;
     }
 
     * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { padding: 14px; }
-    .app { max-width: 850px; margin: 0 auto; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    body { padding: 12px; }
+    .app { max-width: 860px; margin: 0 auto; }
     .topbar {
-      position: sticky; top: 0; z-index: 10;
-      background: linear-gradient(to bottom, rgba(15,23,42,.96), rgba(15,23,42,.84));
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: linear-gradient(to bottom, rgba(15,23,42,.96), rgba(15,23,42,.88));
       backdrop-filter: blur(8px);
       padding: 8px 0 12px;
       margin-bottom: 10px;
     }
-    h1 { margin: 0 0 4px; font-size: 1.4rem; }
-    .sub { color: var(--muted); font-size: .95rem; }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 1.5rem;
+      text-align: center;
+    }
     .toolbar {
-      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
     button {
       border: 1px solid var(--border);
@@ -46,8 +62,34 @@
       font-size: .95rem;
       cursor: pointer;
     }
-    button.primary { background: var(--accent); color: #052e16; border-color: transparent; font-weight: 700; }
     button.warn { background: transparent; color: #fecaca; border-color: #7f1d1d; }
+
+    .legend {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 7px;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 800;
+      line-height: 1;
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .badge.free { background: var(--free); color: white; }
+    .badge.machine { background: var(--machine); color: white; }
+    .badge.home { background: var(--home); color: var(--home-text); }
 
     .workout {
       border: 1px solid var(--border);
@@ -70,8 +112,7 @@
       text-align: left;
     }
     .workout-title { font-size: 1.08rem; font-weight: 700; }
-    .workout-sub { color: var(--muted); font-size: .88rem; margin-top: 4px; }
-    .chev { color: var(--muted); font-size: 1.2rem; }
+    .chev { color: var(--muted); font-size: 1.2rem; transition: transform .15s ease; }
     .workout-body { display: none; padding: 12px; border-top: 1px solid var(--border); }
     .workout.open .workout-body { display: block; }
     .workout.open .chev { transform: rotate(180deg); }
@@ -86,16 +127,9 @@
     .exercise-head {
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
       padding: 10px;
-    }
-    .exercise-main {
-      min-width: 0;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      align-items: center;
     }
     .name-btn {
       min-height: var(--tap);
@@ -103,17 +137,43 @@
       border: 0;
       padding: 0;
       text-align: left;
+      color: var(--text);
+      width: 100%;
+      display: block;
+    }
+    .name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+    }
+    .name-left {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .name-text {
       font-size: 1rem;
       font-weight: 650;
-      color: var(--text);
     }
-    .summary { color: var(--muted); font-size: .85rem; margin-top: 4px; }
+
     .set-boxes {
-      display: flex; gap: 6px; align-items: center; justify-content: flex-end; flex-wrap: wrap;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      flex-shrink: 0;
     }
     .set-pill {
-      display: inline-flex; align-items: center; justify-content: center;
-      min-width: 38px; height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 38px;
+      height: 38px;
       border-radius: 10px;
       border: 1px solid var(--border);
       background: var(--panel-2);
@@ -121,51 +181,98 @@
       overflow: hidden;
     }
     .set-pill input {
-      position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
     }
     .set-pill span { font-size: .85rem; color: var(--muted); }
     .set-pill:has(input:checked) { background: var(--accent); border-color: var(--accent); }
     .set-pill:has(input:checked) span { color: #052e16; font-weight: 700; }
 
-    .actions {
-      display: flex; gap: 6px; align-items: center; justify-content: flex-end; margin-top: 8px;
+    .exercise-body {
+      display: none;
+      padding: 0 10px 10px;
+      border-top: 1px solid rgba(148,163,184,.15);
     }
-    .mini-btn {
-      min-height: 38px; min-width: 38px; padding: 0 10px; border-radius: 10px; font-size: .9rem;
+    .exercise.open .exercise-body { display: block; }
+
+    .section-title {
+      color: var(--muted);
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin: 12px 0 6px;
+    }
+    .exercise-body p,
+    .exercise-body ul {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+    .exercise-body ul {
+      padding-left: 18px;
+    }
+    .exercise-body li {
+      margin-bottom: 6px;
     }
 
-    .exercise-body { display: none; padding: 0 10px 10px; border-top: 1px solid rgba(148,163,184,.15); }
-    .exercise.open .exercise-body { display: block; }
     .meta-grid {
-      display: grid; gap: 10px; grid-template-columns: 1fr 140px; align-items: end; margin-top: 10px;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: end;
+      margin-top: 8px;
     }
-    label { font-size: .82rem; color: var(--muted); display: block; margin-bottom: 6px; }
-    input[type="number"] {
-      width: 100%; min-height: var(--tap);
-      border-radius: 10px; border: 1px solid var(--border);
-      background: var(--panel-2); color: var(--text); padding: 10px 12px; font-size: 1rem;
+    .two-col {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr 160px;
+      align-items: end;
+      margin-top: 8px;
     }
-    .hint {
-      margin-top: 10px; color: var(--muted); font-size: .9rem; line-height: 1.35;
+    label {
+      font-size: .82rem;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 6px;
     }
-    .info-panel {
-      display: none; margin-top: 10px; padding: 10px; border-radius: 10px;
-      background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.22);
+    input[type="number"], select {
+      width: 100%;
+      min-height: var(--tap);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 1rem;
     }
-    .info-panel.open { display: block; }
-    ul { margin: 8px 0 0 18px; padding: 0; }
-    li { margin-bottom: 6px; }
 
     .footer-note {
-      color: var(--muted); font-size: .85rem; padding: 6px 2px 30px;
+      color: var(--muted);
+      font-size: .85rem;
+      padding: 6px 2px 24px;
+      text-align: center;
     }
 
     @media (max-width: 640px) {
       body { padding: 10px; }
-      .exercise-head { grid-template-columns: 1fr; }
-      .exercise-main { grid-template-columns: 1fr; }
-      .set-boxes { justify-content: flex-start; }
-      .meta-grid { grid-template-columns: 1fr; }
+      .exercise-head {
+        grid-template-columns: 1fr;
+      }
+      .name-row {
+        align-items: flex-start;
+      }
+      .name-left {
+        flex-wrap: nowrap;
+      }
+      .meta-grid, .two-col {
+        grid-template-columns: 1fr;
+      }
+      .set-boxes {
+        justify-content: flex-end;
+      }
     }
   </style>
 </head>
@@ -173,33 +280,53 @@
   <div class="app">
     <div class="topbar">
       <h1>Gym Tracker</h1>
-      <div class="sub">Phase 1. Tap a workout. Tap an exercise name for reps and weight. Tap (i) for form notes.</div>
       <div class="toolbar">
-        <button class="primary" id="expandTodayBtn">Open Lift B</button>
         <button id="collapseAllBtn">Collapse all</button>
         <button class="warn" id="resetWeekBtn">Reset checkmarks</button>
       </div>
     </div>
 
+    <div class="legend">
+      <span><span class="badge free">F</span> Free weights</span>
+      <span><span class="badge machine">M</span> Machine</span>
+      <span><span class="badge home">H</span> At home / bodyweight</span>
+    </div>
+
     <div id="workouts"></div>
 
     <div class="footer-note">
-      Saved on this device with local storage. If you clear browser/site data, your checkmarks and weights may reset.
+      Saved on this device. If you clear browser data, your checkmarks and saved values may reset.
     </div>
   </div>
 
   <script>
-    const appKey = 'ymca-phase1-tracker-v1';
+    const appKey = 'ymca-phase1-tracker-v2';
+
+    const warmup = {
+      name: 'Warm-up Cardio',
+      tags: ['H'],
+      sets: 1,
+      summary: '8 to 10 min',
+      reps: '8 to 10 minutes',
+      details: 'Start each lifting day with easy cardio. Goal is to warm up, not gas yourself.',
+      info: [
+        'Pick bike, elliptical, or incline treadmill walk.',
+        'Easy pace. You should still be able to talk.',
+        'Use this to loosen up before lifting.'
+      ],
+      cardioLog: true
+    };
 
     const data = [
       {
         id: 'lift-a',
         title: 'Lift A',
-        subtitle: 'Leg press, chest press, row, RDL, step-ups, plank',
         exercises: [
+          { id: 'warmup-a', ...warmup },
           {
             id: 'leg-press',
             name: 'Leg Press',
+            tags: ['M'],
             sets: 3,
             summary: '3 x 10',
             reps: '3 sets of 10',
@@ -214,6 +341,7 @@
           {
             id: 'chest-press',
             name: 'Chest Press or DB Bench',
+            tags: ['M', 'F'],
             sets: 3,
             summary: '3 x 8 to 10',
             reps: '3 sets of 8 to 10',
@@ -227,6 +355,7 @@
           {
             id: 'seated-row',
             name: 'Seated Row',
+            tags: ['M'],
             sets: 3,
             summary: '3 x 10',
             reps: '3 sets of 10',
@@ -240,6 +369,7 @@
           {
             id: 'rdl',
             name: 'DB Romanian Deadlift',
+            tags: ['F'],
             sets: 2,
             summary: '2 x 10',
             reps: '2 sets of 10',
@@ -253,6 +383,7 @@
           {
             id: 'step-ups',
             name: 'Low Step-Ups',
+            tags: ['H'],
             sets: 2,
             summary: '2 x 8 each leg',
             reps: '2 sets of 8 each leg',
@@ -266,6 +397,7 @@
           {
             id: 'plank',
             name: 'Plank',
+            tags: ['H'],
             sets: 3,
             summary: '3 x 20 to 30 sec',
             reps: '3 rounds of 20 to 30 seconds',
@@ -280,11 +412,11 @@
       {
         id: 'cardio-1',
         title: 'Cardio 1',
-        subtitle: 'Easy no-impact cardio day',
         exercises: [
           {
             id: 'steady-cardio-1',
             name: 'Bike, Elliptical, or Incline Walk',
+            tags: ['H'],
             sets: 1,
             summary: '20 to 35 min',
             reps: '20 to 35 minutes',
@@ -293,18 +425,20 @@
               'This is not a test day.',
               'Goal is to build engine without impact.',
               'If legs feel beat up, keep it easy and shorter.'
-            ]
+            ],
+            cardioLog: true
           }
         ]
       },
       {
         id: 'lift-b',
         title: 'Lift B',
-        subtitle: 'Goblet squat, pulldown, shoulder press, ham curl, glute bridge, core',
         exercises: [
+          { id: 'warmup-b', ...warmup },
           {
             id: 'goblet-squat',
             name: 'Goblet Squat to Box/Bench',
+            tags: ['F'],
             sets: 3,
             summary: '3 x 8 to 10',
             reps: '3 sets of 8 to 10',
@@ -319,6 +453,7 @@
           {
             id: 'lat-pulldown',
             name: 'Lat Pulldown',
+            tags: ['M'],
             sets: 3,
             summary: '3 x 10',
             reps: '3 sets of 10',
@@ -332,6 +467,7 @@
           {
             id: 'shoulder-press',
             name: 'Seated DB Shoulder Press',
+            tags: ['F'],
             sets: 2,
             summary: '2 x 10',
             reps: '2 sets of 10',
@@ -345,6 +481,7 @@
           {
             id: 'hamstring-curl',
             name: 'Hamstring Curl',
+            tags: ['M'],
             sets: 3,
             summary: '3 x 10 to 12',
             reps: '3 sets of 10 to 12',
@@ -358,6 +495,7 @@
           {
             id: 'glute-bridge',
             name: 'Glute Bridge / Hip Thrust',
+            tags: ['H'],
             sets: 2,
             summary: '2 x 12',
             reps: '2 sets of 12',
@@ -371,6 +509,7 @@
           {
             id: 'dead-bug',
             name: 'Dead Bug or Side Plank',
+            tags: ['H'],
             sets: 3,
             summary: '2 to 3 rounds',
             reps: '2 to 3 rounds',
@@ -386,11 +525,11 @@
       {
         id: 'cardio-2',
         title: 'Cardio 2',
-        subtitle: 'Easy no-impact cardio day',
         exercises: [
           {
             id: 'steady-cardio-2',
             name: 'Bike, Elliptical, or Incline Walk',
+            tags: ['H'],
             sets: 1,
             summary: '20 to 35 min',
             reps: '20 to 35 minutes',
@@ -399,18 +538,20 @@
               'Same as Cardio 1.',
               'Pick whatever feels best on the knee and shins.',
               'This should help recovery, not bury you.'
-            ]
+            ],
+            cardioLog: true
           }
         ]
       },
       {
         id: 'lift-c',
         title: 'Lift C',
-        subtitle: 'Split squat/lunge, incline press, row, leg curl/ext, calves, core',
         exercises: [
+          { id: 'warmup-c', ...warmup },
           {
             id: 'split-squat',
             name: 'Assisted Split Squat / Reverse Lunge',
+            tags: ['H'],
             sets: 2,
             summary: '2 x 8 each leg',
             reps: '2 sets of 8 each leg',
@@ -424,6 +565,7 @@
           {
             id: 'incline-press',
             name: 'Incline DB Bench / Machine Press',
+            tags: ['F', 'M'],
             sets: 3,
             summary: '3 x 8 to 10',
             reps: '3 sets of 8 to 10',
@@ -436,6 +578,7 @@
           {
             id: 'row-c',
             name: 'Cable or Machine Row',
+            tags: ['M'],
             sets: 3,
             summary: '3 x 10',
             reps: '3 sets of 10',
@@ -449,6 +592,7 @@
           {
             id: 'leg-curl-ext',
             name: 'Leg Curl or Light Leg Extension',
+            tags: ['M'],
             sets: 2,
             summary: '2 x 12',
             reps: '2 sets of 12',
@@ -461,6 +605,7 @@
           {
             id: 'calf-raises',
             name: 'Calf Raises',
+            tags: ['H', 'M'],
             sets: 3,
             summary: '3 x 12 to 15',
             reps: '3 sets of 12 to 15',
@@ -473,6 +618,7 @@
           {
             id: 'pallof',
             name: 'Pallof Press / Cable Core',
+            tags: ['M'],
             sets: 3,
             summary: '2 to 3 sets',
             reps: '2 to 3 sets',
@@ -488,9 +634,9 @@
 
     function loadState() {
       try {
-        return JSON.parse(localStorage.getItem(appKey)) || { checks: {}, weights: {} };
+        return JSON.parse(localStorage.getItem(appKey)) || { checks: {}, weights: {}, cardio: {} };
       } catch {
-        return { checks: {}, weights: {} };
+        return { checks: {}, weights: {}, cardio: {} };
       }
     }
 
@@ -499,61 +645,96 @@
     }
 
     const state = loadState();
+    if (!state.checks) state.checks = {};
+    if (!state.weights) state.weights = {};
+    if (!state.cardio) state.cardio = {};
+
+    function badgeClass(tag) {
+      if (tag === 'F') return 'free';
+      if (tag === 'M') return 'machine';
+      return 'home';
+    }
+
+    function tagBadges(tags = []) {
+      return tags.map(tag => `<span class="badge ${badgeClass(tag)}">${tag}</span>`).join('');
+    }
+
+    function cardioFields(workout, ex) {
+      const key = `${workout.id}.${ex.id}`;
+      const saved = state.cardio[key] || {};
+      return `
+        <div class="section-title">Cardio log</div>
+        <div class="meta-grid">
+          <div>
+            <label for="type-${workout.id}-${ex.id}">Type</label>
+            <select id="type-${workout.id}-${ex.id}" data-cardio-type="${key}">
+              ${['', 'Bike', 'Elliptical', 'Incline Treadmill'].map(opt => `
+                <option value="${opt}" ${saved.type === opt ? 'selected' : ''}>${opt || 'Select type'}</option>
+              `).join('')}
+            </select>
+          </div>
+          <div>
+            <label for="time-${workout.id}-${ex.id}">Time (min)</label>
+            <input id="time-${workout.id}-${ex.id}" type="number" step="1" inputmode="numeric" placeholder="0" value="${saved.time ?? ''}" data-cardio-time="${key}">
+          </div>
+          <div>
+            <label for="speed-${workout.id}-${ex.id}">Speed / level</label>
+            <input id="speed-${workout.id}-${ex.id}" type="text" placeholder="ex: 3.2 or level 5" value="${saved.speed ?? ''}" data-cardio-speed="${key}">
+          </div>
+        </div>
+      `;
+    }
 
     function render() {
       const container = document.getElementById('workouts');
       container.innerHTML = data.map(workout => `
         <section class="workout" id="${workout.id}">
           <button class="workout-header" data-toggle-workout="${workout.id}">
-            <div>
-              <div class="workout-title">${workout.title}</div>
-              <div class="workout-sub">${workout.subtitle}</div>
-            </div>
+            <div class="workout-title">${workout.title}</div>
             <div class="chev">▾</div>
           </button>
           <div class="workout-body">
             ${workout.exercises.map(ex => `
               <div class="exercise" id="${workout.id}-${ex.id}">
                 <div class="exercise-head">
-                  <div class="exercise-main">
-                    <button class="name-btn" data-toggle-exercise="${workout.id}-${ex.id}">
-                      <div>${ex.name}</div>
-                      <div class="summary">${ex.summary}</div>
-                    </button>
-                    <div class="set-boxes">
-                      ${Array.from({length: ex.sets}, (_, i) => {
-                        const key = `${workout.id}.${ex.id}.set${i+1}`;
-                        return `
-                          <label class="set-pill">
-                            <input type="checkbox" data-check="${key}" ${state.checks[key] ? 'checked' : ''}>
-                            <span>${i+1}</span>
-                          </label>
-                        `;
-                      }).join('')}
+                  <button class="name-btn" data-toggle-exercise="${workout.id}-${ex.id}">
+                    <div class="name-row">
+                      <div class="name-left">
+                        ${tagBadges(ex.tags)}
+                        <span class="name-text">${ex.name}</span>
+                      </div>
+                      <div class="set-boxes">
+                        ${Array.from({length: ex.sets}, (_, i) => {
+                          const key = `${workout.id}.${ex.id}.set${i+1}`;
+                          return `
+                            <label class="set-pill" onclick="event.stopPropagation()">
+                              <input type="checkbox" data-check="${key}" ${state.checks[key] ? 'checked' : ''}>
+                              <span>${i+1}</span>
+                            </label>
+                          `;
+                        }).join('')}
+                      </div>
                     </div>
-                  </div>
-                  <div class="actions">
-                    <button class="mini-btn" data-toggle-info="${workout.id}-${ex.id}">(i)</button>
-                  </div>
+                  </button>
                 </div>
                 <div class="exercise-body">
-                  <div class="meta-grid">
-                    <div>
-                      <label>Reps / target</label>
-                      <div>${ex.reps}</div>
-                      <div class="hint">${ex.details}</div>
+                  <div class="section-title">Target</div>
+                  <p>${ex.reps}</p>
+                  <div class="section-title">Notes</div>
+                  <p>${ex.details}</p>
+                  <div class="section-title">How to do it</div>
+                  <ul>
+                    ${ex.info.map(item => `<li>${item}</li>`).join('')}
+                  </ul>
+                  ${ex.cardioLog ? cardioFields(workout, ex) : `
+                    <div class="two-col">
+                      <div></div>
+                      <div>
+                        <label for="w-${workout.id}-${ex.id}">Last weight used</label>
+                        <input id="w-${workout.id}-${ex.id}" type="number" step="5" inputmode="decimal" placeholder="0" value="${state.weights[`${workout.id}.${ex.id}`] ?? ''}" data-weight="${workout.id}.${ex.id}">
+                      </div>
                     </div>
-                    <div>
-                      <label for="w-${workout.id}-${ex.id}">Last weight used</label>
-                      <input id="w-${workout.id}-${ex.id}" type="number" step="5" inputmode="decimal" placeholder="0" value="${state.weights[`${workout.id}.${ex.id}`] ?? ''}" data-weight="${workout.id}.${ex.id}">
-                    </div>
-                  </div>
-                  <div class="info-panel" id="info-${workout.id}-${ex.id}">
-                    <strong>How to do it</strong>
-                    <ul>
-                      ${ex.info.map(item => `<li>${item}</li>`).join('')}
-                    </ul>
-                  </div>
+                  `}
                 </div>
               </div>
             `).join('')}
@@ -567,22 +748,13 @@
     function bindEvents() {
       document.querySelectorAll('[data-toggle-workout]').forEach(btn => {
         btn.onclick = () => {
-          const section = document.getElementById(btn.dataset.toggleWorkout);
-          section.classList.toggle('open');
+          document.getElementById(btn.dataset.toggleWorkout).classList.toggle('open');
         };
       });
 
       document.querySelectorAll('[data-toggle-exercise]').forEach(btn => {
         btn.onclick = () => {
-          const ex = document.getElementById(btn.dataset.toggleExercise);
-          ex.classList.toggle('open');
-        };
-      });
-
-      document.querySelectorAll('[data-toggle-info]').forEach(btn => {
-        btn.onclick = () => {
-          const panel = document.getElementById(`info-${btn.dataset.toggleInfo}`);
-          panel.classList.toggle('open');
+          document.getElementById(btn.dataset.toggleExercise).classList.toggle('open');
         };
       });
 
@@ -599,21 +771,42 @@
           saveState();
         };
       });
+
+      document.querySelectorAll('[data-cardio-type]').forEach(input => {
+        input.onchange = () => {
+          const key = input.dataset.cardioType;
+          state.cardio[key] = state.cardio[key] || {};
+          state.cardio[key].type = input.value;
+          saveState();
+        };
+      });
+
+      document.querySelectorAll('[data-cardio-time]').forEach(input => {
+        input.oninput = () => {
+          const key = input.dataset.cardioTime;
+          state.cardio[key] = state.cardio[key] || {};
+          state.cardio[key].time = input.value;
+          saveState();
+        };
+      });
+
+      document.querySelectorAll('[data-cardio-speed]').forEach(input => {
+        input.oninput = () => {
+          const key = input.dataset.cardioSpeed;
+          state.cardio[key] = state.cardio[key] || {};
+          state.cardio[key].speed = input.value;
+          saveState();
+        };
+      });
     }
 
     document.getElementById('collapseAllBtn').onclick = () => {
       document.querySelectorAll('.workout').forEach(el => el.classList.remove('open'));
       document.querySelectorAll('.exercise').forEach(el => el.classList.remove('open'));
-      document.querySelectorAll('.info-panel').forEach(el => el.classList.remove('open'));
-    };
-
-    document.getElementById('expandTodayBtn').onclick = () => {
-      document.getElementById('lift-b')?.classList.add('open');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     document.getElementById('resetWeekBtn').onclick = () => {
-      if (!confirm('Reset all set checkmarks? Weights will stay saved.')) return;
+      if (!confirm('Reset all set checkmarks? Saved weights and cardio notes will stay.')) return;
       state.checks = {};
       saveState();
       render();
