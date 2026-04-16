@@ -5,39 +5,34 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Phase 1 Gym Tracker</title>
   <style>
-    :root{
-      --bg:#0f172a; --panel:#111827; --panel2:#1f2937; --text:#e5e7eb; --muted:#94a3b8;
-      --line:#334155; --free:#2563eb; --machine:#dc2626; --home:#eab308;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:860px;margin:0 auto;padding:16px 12px 40px}
-    h1{text-align:center;margin:8px 0 12px;font-size:1.5rem}
+    :root{--bg:#0f172a;--panel:#111827;--panel2:#1f2937;--text:#e5e7eb;--muted:#94a3b8;--line:#334155;--free:#2563eb;--machine:#dc2626;--home:#eab308;--green:#16a34a}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:920px;margin:0 auto;padding:16px 12px 40px} h1{text-align:center;margin:8px 0 8px;font-size:1.5rem}
     .top-note{text-align:center;color:var(--muted);font-size:.95rem;margin:0 0 16px}
+    .week-box{border:1px solid var(--line);border-radius:12px;background:#0b1220;padding:12px;margin-bottom:14px}
+    .week-meta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;color:var(--muted);font-size:.9rem}
+    .top-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin:10px 0 6px}
+    button{border:1px solid #475569;background:#111827;color:var(--text);border-radius:10px;padding:10px 14px;font-size:.95rem;cursor:pointer}
+    button.primary{background:var(--green);border-color:var(--green);color:#fff;font-weight:700}
     .legend{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;color:var(--muted);font-size:.85rem;margin-bottom:12px}
     .legend span{display:flex;align-items:center;gap:6px}
     .badge{width:22px;height:22px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#fff;flex:0 0 auto}
     .free{background:var(--free)} .machine{background:var(--machine)} .home{background:var(--home);color:#111827}
     details.section{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin:10px 0;overflow:hidden}
-    details.section > summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:700;background:var(--panel2);font-size:1.05rem}
-    details.section > summary::-webkit-details-marker{display:none}
+    details.section>summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:700;background:var(--panel2);font-size:1.05rem}
+    details.section>summary::-webkit-details-marker,details.exercise>summary::-webkit-details-marker{display:none}
     .section-body{padding:10px 10px 12px}
     details.exercise{border:1px solid var(--line);border-radius:12px;margin:8px 0;overflow:hidden;background:#0b1220}
-    details.exercise > summary{list-style:none;cursor:pointer;padding:12px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-    details.exercise > summary::-webkit-details-marker{display:none}
-    .left{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
-    .name{font-weight:700;line-height:1.2}
-    .sets{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
-    .sets label{display:flex;align-items:center;gap:3px;color:var(--muted);font-size:.78rem}
+    details.exercise>summary{list-style:none;cursor:pointer;padding:12px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .left{display:flex;align-items:center;gap:8px;min-width:0;flex:1} .name{font-weight:700;line-height:1.2}
+    .sets{display:flex;gap:6px;align-items:center;flex-wrap:nowrap} .sets label{display:flex;align-items:center;gap:3px;color:var(--muted);font-size:.78rem}
     .pill{border:1px solid var(--line);background:#0b1220;border-radius:999px;padding:4px 8px;color:var(--muted);font-size:.8rem;display:inline-block}
-    .content{padding:0 12px 12px;border-top:1px solid var(--line)}
-    .meta{color:var(--muted);margin:10px 0 8px;font-size:.92rem}
-    .howto{line-height:1.35;color:#d1d5db;font-size:.95rem;margin:8px 0 12px}
-    .grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    .field{display:flex;flex-direction:column;gap:4px}
-    .field label{color:var(--muted);font-size:.82rem}
-    input{width:100%;border:1px solid #475569;background:#111827;color:var(--text);border-radius:10px;padding:10px 11px;font-size:1rem}
-    @media (max-width:640px){.grid4{grid-template-columns:1fr} details.exercise > summary{align-items:flex-start} .sets{flex-wrap:wrap;justify-content:flex-end}}
+    .content{padding:0 12px 12px;border-top:1px solid var(--line)} .meta{color:var(--muted);margin:10px 0 8px;font-size:.92rem}
+    .howto{line-height:1.35;color:#d1d5db;font-size:.95rem;margin:8px 0 12px} .grid2,.grid4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .field{display:flex;flex-direction:column;gap:4px} .field label{color:var(--muted);font-size:.82rem}
+    input,select,textarea{width:100%;border:1px solid #475569;background:#111827;color:var(--text);border-radius:10px;padding:10px 11px;font-size:1rem}
+    textarea{min-height:72px;resize:vertical} .hint{color:var(--muted);font-size:.82rem;margin-top:4px}
+    @media (max-width:640px){.grid2,.grid4{grid-template-columns:1fr} details.exercise>summary{align-items:flex-start} .sets{flex-wrap:wrap;justify-content:flex-end}}
   </style>
 </head>
 <body>
@@ -45,199 +40,77 @@
   <h1>Phase 1 Gym Tracker</h1>
   <div class="top-note">More cardio, more core, more knee stability. Enough lifting to support it.</div>
 
+  <div class="week-box">
+    <div class="week-meta">
+      <div><strong>Current week:</strong> <span id="currentWeek">1</span></div>
+      <div><strong>Last transition:</strong> <span id="lastTransition">none</span></div>
+    </div>
+    <div class="top-bar">
+      <button class="primary" id="transitionBtn">Transition to Next Week</button>
+      <button id="clearChecksBtn">Clear This Week's Checkboxes</button>
+    </div>
+    <div class="hint">Transition saves this week in the background, clears the current form, and rolls suggested weights forward based on easy / medium / hard.</div>
+  </div>
+
   <div class="legend">
     <span><i class="badge free">F</i> Free weights</span>
     <span><i class="badge machine">M</i> Machine</span>
     <span><i class="badge home">H</i> Home / bodyweight</span>
   </div>
 
-  <details class="section">
-    <summary>Lift A</summary>
-    <div class="section-body">
+  <details class="section"><summary>Lift A</summary><div class="section-body">
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Warmup Cardio</div></div><div class="sets"><span class="pill">8 to 13 min</span></div></summary><div class="content"><div class="meta">Easy to moderate.</div><div class="grid4"><div class="field"><label>Type</label><input data-save="liftA-cardio-type"></div><div class="field"><label>RPM</label><input data-save="liftA-cardio-rpm"></div><div class="field"><label>Resistance</label><input data-save="liftA-cardio-resistance"></div><div class="field"><label>Incline</label><input data-save="liftA-cardio-incline"></div></div><div class="field" style="margin-top:10px"><label>Cardio notes</label><textarea data-save="liftA-cardio-notes" placeholder="9 min 45-50, 3 min 55-60, 1 min 45-50"></textarea></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Leg Press</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftA-legpress-s1"></label><label>2 <input type="checkbox" data-save="liftA-legpress-s2"></label><label>3 <input type="checkbox" data-save="liftA-legpress-s3"></label></div></summary><div class="content"><div class="meta">3 x 10 to 13</div><div class="howto">Feet shoulder width. Lower under control. Press up smooth.</div><div class="grid2"><div class="field"><label>Suggested / actual weight</label><input data-save="liftA-legpress-weight" data-weight="true"></div><div class="field"><label>Weekly increase if easy</label><input data-save="liftA-legpress-increment" data-weight-step="true"></div><div class="field"><label>Difficulty</label><select data-save="liftA-legpress-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftA-legpress-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Seated Row</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftA-row-s1"></label><label>2 <input type="checkbox" data-save="liftA-row-s2"></label><label>3 <input type="checkbox" data-save="liftA-row-s3"></label></div></summary><div class="content"><div class="meta">3 x 10 to 13</div><div class="howto">Pull toward lower ribs. Chest up. No body swing.</div><div class="grid2"><div class="field"><label>Suggested / actual weight</label><input data-save="liftA-row-weight" data-weight="true"></div><div class="field"><label>Weekly increase if easy</label><input data-save="liftA-row-increment" data-weight-step="true"></div><div class="field"><label>Difficulty</label><select data-save="liftA-row-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftA-row-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge free">F</span><div class="name">Romanian Deadlift</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftA-rdl-s1"></label><label>2 <input type="checkbox" data-save="liftA-rdl-s2"></label></div></summary><div class="content"><div class="meta">2 x 10 to 13</div><div class="howto">Soft knees. Hinge at the hips. Back flat. Yes, it looks weird in the mirror.</div><div class="grid2"><div class="field"><label>Suggested / actual weight</label><input data-save="liftA-rdl-weight" data-weight="true"></div><div class="field"><label>Weekly increase if easy</label><input data-save="liftA-rdl-increment" data-weight-step="true"></div><div class="field"><label>Difficulty</label><select data-save="liftA-rdl-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftA-rdl-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Low Step-Ups</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftA-stepups-s1"></label><label>2 <input type="checkbox" data-save="liftA-stepups-s2"></label><label>3 <input type="checkbox" data-save="liftA-stepups-s3"></label></div></summary><div class="content"><div class="meta">3 x 8 each leg</div><div class="howto">Use a low box. Step up, stand tall, step down under control.</div><div class="grid2"><div class="field"><label>Height / notes</label><input data-save="liftA-stepups-weight"></div><div class="field"><label>Difficulty</label><select data-save="liftA-stepups-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftA-stepups-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Plank</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftA-plank-s1"></label><label>2 <input type="checkbox" data-save="liftA-plank-s2"></label><label>3 <input type="checkbox" data-save="liftA-plank-s3"></label></div></summary><div class="content"><div class="meta">3 x 20 to 30 sec</div><div class="howto">Straight line. Squeeze abs and glutes.</div><div class="grid2"><div class="field"><label>Seconds / notes</label><input data-save="liftA-plank-weight"></div><div class="field"><label>Difficulty</label><select data-save="liftA-plank-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftA-plank-notes"></textarea></div></div></div></details>
+  </div></details>
 
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Warmup Cardio</div></div><div class="sets"><span class="pill">8 to 12 min</span></div></summary>
-        <div class="content"><div class="meta">Easy to moderate.</div><div class="howto">Use elliptical, bike, treadmill walk, or rower. Warm up. Do not gas yourself before lifting.</div>
-          <div class="grid4">
-            <div class="field"><label>Type</label><input data-save="liftA-cardio-type" placeholder="Elliptical, bike..." /></div>
-            <div class="field"><label>RPM</label><input data-save="liftA-cardio-rpm" placeholder="45-50" /></div>
-            <div class="field"><label>Resistance</label><input data-save="liftA-cardio-resistance" placeholder="3" /></div>
-            <div class="field"><label>Incline</label><input data-save="liftA-cardio-incline" placeholder="5" /></div>
-          </div>
-        </div>
-      </details>
+  <details class="section"><summary>Cardio 1</summary><div class="section-body">
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Steady Cardio</div></div><div class="sets"><span class="pill">20 to 30 min</span></div></summary><div class="content"><div class="meta">Easy to moderate. Build the engine.</div><div class="grid4"><div class="field"><label>Type</label><input data-save="cardio1-type"></div><div class="field"><label>RPM</label><input data-save="cardio1-rpm"></div><div class="field"><label>Resistance</label><input data-save="cardio1-resistance"></div><div class="field"><label>Incline</label><input data-save="cardio1-incline"></div></div><div class="field" style="margin-top:10px"><label>Cardio notes</label><textarea data-save="cardio1-notes"></textarea></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Balance Board</div></div><div class="sets"><label>1 <input type="checkbox" data-save="cardio1-balance-s1"></label><label>2 <input type="checkbox" data-save="cardio1-balance-s2"></label><label>3 <input type="checkbox" data-save="cardio1-balance-s3"></label></div></summary><div class="content"><div class="meta">3 rounds</div><div class="howto">Get set holding support, then let go and keep it flat.</div><div class="grid2"><div class="field"><label>Hold times / notes</label><input data-save="cardio1-balance-weight"></div><div class="field"><label>Difficulty</label><select data-save="cardio1-balance-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="cardio1-balance-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Dead Bug or Side Plank</div></div><div class="sets"><label>1 <input type="checkbox" data-save="cardio1-core-s1"></label><label>2 <input type="checkbox" data-save="cardio1-core-s2"></label><label>3 <input type="checkbox" data-save="cardio1-core-s3"></label></div></summary><div class="content"><div class="meta">2 to 3 rounds</div><div class="howto">Quiet core work. Good carryover for your goal.</div><div class="grid2"><div class="field"><label>Reps / hold times</label><input data-save="cardio1-core-weight"></div><div class="field"><label>Difficulty</label><select data-save="cardio1-core-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="cardio1-core-notes"></textarea></div></div></div></details>
+  </div></details>
 
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Leg Press</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftA-legpress-s1"></label><label>2 <input type="checkbox" data-save="liftA-legpress-s2"></label><label>3 <input type="checkbox" data-save="liftA-legpress-s3"></label></div></summary>
-        <div class="content"><div class="meta">3 x 10</div><div class="howto">Feet shoulder width. Lower until knees are bent comfortably. Press up smoothly. Keep low back against the pad.</div><div class="field"><label>Last weight used</label><input data-save="liftA-legpress-weight" placeholder="lbs" /></div></div>
-      </details>
+  <details class="section"><summary>Lift B</summary><div class="section-body">
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Warmup Cardio</div></div><div class="sets"><span class="pill">8 to 13 min</span></div></summary><div class="content"><div class="meta">Easy to moderate.</div><div class="grid4"><div class="field"><label>Type</label><input data-save="liftB-cardio-type"></div><div class="field"><label>RPM</label><input data-save="liftB-cardio-rpm"></div><div class="field"><label>Resistance</label><input data-save="liftB-cardio-resistance"></div><div class="field"><label>Incline</label><input data-save="liftB-cardio-incline"></div></div><div class="field" style="margin-top:10px"><label>Cardio notes</label><textarea data-save="liftB-cardio-notes"></textarea></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge free">F</span><div class="name">Goblet Squat</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftB-goblet-s1"></label><label>2 <input type="checkbox" data-save="liftB-goblet-s2"></label><label>3 <input type="checkbox" data-save="liftB-goblet-s3"></label></div></summary><div class="content"><div class="meta">3 x 10 to 13</div><div class="howto">Keep the dumbbell close to your chest. Controlled down and up.</div><div class="grid2"><div class="field"><label>Suggested / actual weight</label><input data-save="liftB-goblet-weight" data-weight="true"></div><div class="field"><label>Weekly increase if easy</label><input data-save="liftB-goblet-increment" data-weight-step="true"></div><div class="field"><label>Difficulty</label><select data-save="liftB-goblet-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftB-goblet-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Lat Pulldown</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftB-pulldown-s1"></label><label>2 <input type="checkbox" data-save="liftB-pulldown-s2"></label><label>3 <input type="checkbox" data-save="liftB-pulldown-s3"></label></div></summary><div class="content"><div class="meta">3 x 10 to 13</div><div class="howto">Pull to upper chest. Elbows down. Smooth reps.</div><div class="grid2"><div class="field"><label>Suggested / actual weight</label><input data-save="liftB-pulldown-weight" data-weight="true"></div><div class="field"><label>Weekly increase if easy</label><input data-save="liftB-pulldown-increment" data-weight-step="true"></div><div class="field"><label>Difficulty</label><select data-save="liftB-pulldown-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftB-pulldown-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Leg Curl / Hamstring Curl</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftB-legcurl-s1"></label><label>2 <input type="checkbox" data-save="liftB-legcurl-s2"></label><label>3 <input type="checkbox" data-save="liftB-legcurl-s3"></label></div></summary><div class="content"><div class="meta">3 x 10 to 13</div><div class="howto">Curl with control. Slow back down.</div><div class="grid2"><div class="field"><label>Suggested / actual weight</label><input data-save="liftB-legcurl-weight" data-weight="true"></div><div class="field"><label>Weekly increase if easy</label><input data-save="liftB-legcurl-increment" data-weight-step="true"></div><div class="field"><label>Difficulty</label><select data-save="liftB-legcurl-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftB-legcurl-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Glute Bridge / Hip Thrust</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftB-bridge-s1"></label><label>2 <input type="checkbox" data-save="liftB-bridge-s2"></label><label>3 <input type="checkbox" data-save="liftB-bridge-s3"></label></div></summary><div class="content"><div class="meta">3 x 10 to 13</div><div class="howto">Feet flat. Drive hips up. Squeeze glutes.</div><div class="grid2"><div class="field"><label>Load / notes</label><input data-save="liftB-bridge-weight"></div><div class="field"><label>Difficulty</label><select data-save="liftB-bridge-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftB-bridge-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Balance Board</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftB-balance-s1"></label><label>2 <input type="checkbox" data-save="liftB-balance-s2"></label><label>3 <input type="checkbox" data-save="liftB-balance-s3"></label></div></summary><div class="content"><div class="meta">3 rounds</div><div class="howto">Use support to get set, then let go and keep it flat.</div><div class="grid2"><div class="field"><label>Hold times / notes</label><input data-save="liftB-balance-weight"></div><div class="field"><label>Difficulty</label><select data-save="liftB-balance-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftB-balance-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Dead Bug or Side Plank</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftB-core-s1"></label><label>2 <input type="checkbox" data-save="liftB-core-s2"></label><label>3 <input type="checkbox" data-save="liftB-core-s3"></label></div></summary><div class="content"><div class="meta">3 rounds</div><div class="howto">Straight-line side plank beats a sloppy longer hold.</div><div class="grid2"><div class="field"><label>Reps / hold times</label><input data-save="liftB-core-weight"></div><div class="field"><label>Difficulty</label><select data-save="liftB-core-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftB-core-notes"></textarea></div></div></div></details>
+  </div></details>
 
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Seated Row</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftA-row-s1"></label><label>2 <input type="checkbox" data-save="liftA-row-s2"></label><label>3 <input type="checkbox" data-save="liftA-row-s3"></label></div></summary>
-        <div class="content"><div class="meta">3 x 10</div><div class="howto">Pull toward lower ribs. Chest up. Squeeze shoulder blades back. No body swing.</div><div class="field"><label>Last weight used</label><input data-save="liftA-row-weight" placeholder="lbs" /></div></div>
-      </details>
+  <details class="section"><summary>Cardio 2</summary><div class="section-body">
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Steady Cardio</div></div><div class="sets"><span class="pill">20 to 30 min</span></div></summary><div class="content"><div class="meta">Extra no-impact conditioning.</div><div class="grid4"><div class="field"><label>Type</label><input data-save="cardio2-type"></div><div class="field"><label>RPM</label><input data-save="cardio2-rpm"></div><div class="field"><label>Resistance</label><input data-save="cardio2-resistance"></div><div class="field"><label>Incline</label><input data-save="cardio2-incline"></div></div><div class="field" style="margin-top:10px"><label>Cardio notes</label><textarea data-save="cardio2-notes"></textarea></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Pallof Press</div></div><div class="sets"><label>1 <input type="checkbox" data-save="cardio2-pallof-s1"></label><label>2 <input type="checkbox" data-save="cardio2-pallof-s2"></label><label>3 <input type="checkbox" data-save="cardio2-pallof-s3"></label></div></summary><div class="content"><div class="meta">2 to 3 x 10 each side</div><div class="howto">Stand sideways to the cable and press straight out. Resist rotation.</div><div class="grid2"><div class="field"><label>Suggested / actual weight</label><input data-save="cardio2-pallof-weight" data-weight="true"></div><div class="field"><label>Weekly increase if easy</label><input data-save="cardio2-pallof-increment" data-weight-step="true"></div><div class="field"><label>Difficulty</label><select data-save="cardio2-pallof-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="cardio2-pallof-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Balance Board</div></div><div class="sets"><label>1 <input type="checkbox" data-save="cardio2-balance-s1"></label><label>2 <input type="checkbox" data-save="cardio2-balance-s2"></label><label>3 <input type="checkbox" data-save="cardio2-balance-s3"></label></div></summary><div class="content"><div class="meta">3 rounds</div><div class="howto">Keep it flat as long as you can.</div><div class="grid2"><div class="field"><label>Hold times / notes</label><input data-save="cardio2-balance-weight"></div><div class="field"><label>Difficulty</label><select data-save="cardio2-balance-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="cardio2-balance-notes"></textarea></div></div></div></details>
+  </div></details>
 
-      <details class="exercise"><summary><div class="left"><span class="badge free">F</span><div class="name">DB Romanian Deadlift</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftA-rdl-s1"></label><label>2 <input type="checkbox" data-save="liftA-rdl-s2"></label></div></summary>
-        <div class="content"><div class="meta">2 x 10</div><div class="howto">Soft knees. Push hips back. Lower dumbbells along thighs and shins with a flat back. Stand tall by driving hips forward.</div><div class="field"><label>Last weight used</label><input data-save="liftA-rdl-weight" placeholder="total lbs or each DB" /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Low Step-Ups</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftA-stepups-s1"></label><label>2 <input type="checkbox" data-save="liftA-stepups-s2"></label></div></summary>
-        <div class="content"><div class="meta">2 x 8 each leg</div><div class="howto">Use a low box. Step up. Stand tall. Step down under control. Hold support if needed.</div><div class="field"><label>Notes</label><input data-save="liftA-stepups-note" placeholder="height, support used..." /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Plank</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftA-plank-s1"></label><label>2 <input type="checkbox" data-save="liftA-plank-s2"></label><label>3 <input type="checkbox" data-save="liftA-plank-s3"></label></div></summary>
-        <div class="content"><div class="meta">3 rounds of 20 to 30 sec</div><div class="howto">Elbows under shoulders. Body straight. Squeeze abs and glutes. Stop before hips sag.</div><div class="field"><label>Seconds per set</label><input data-save="liftA-plank-time" placeholder="25 / 25 / 20" /></div></div>
-      </details>
-
-    </div>
-  </details>
-
-  <details class="section">
-    <summary>Cardio 1</summary>
-    <div class="section-body">
-
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Steady Cardio</div></div><div class="sets"><span class="pill">20 to 30 min</span></div></summary>
-        <div class="content"><div class="meta">Easy to moderate.</div><div class="howto">Build the engine for basketball and volleyball without pounding your joints.</div>
-          <div class="grid4">
-            <div class="field"><label>Type</label><input data-save="cardio1-type" placeholder="Elliptical, bike..." /></div>
-            <div class="field"><label>RPM</label><input data-save="cardio1-rpm" placeholder="45-50" /></div>
-            <div class="field"><label>Resistance</label><input data-save="cardio1-resistance" placeholder="3" /></div>
-            <div class="field"><label>Incline</label><input data-save="cardio1-incline" placeholder="5" /></div>
-          </div>
-        </div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Balance Board</div></div><div class="sets"><label>1 <input type="checkbox" data-save="cardio1-balance-s1"></label><label>2 <input type="checkbox" data-save="cardio1-balance-s2"></label><label>3 <input type="checkbox" data-save="cardio1-balance-s3"></label></div></summary>
-        <div class="content"><div class="meta">3 rounds</div><div class="howto">Get set holding onto support, then let go and try to keep it flat. Good for knee and ankle stabilizers.</div><div class="field"><label>Hold times / notes</label><input data-save="cardio1-balance-time" placeholder="20s / 18s / 22s" /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Dead Bug</div></div><div class="sets"><label>1 <input type="checkbox" data-save="cardio1-deadbug-s1"></label><label>2 <input type="checkbox" data-save="cardio1-deadbug-s2"></label><label>3 <input type="checkbox" data-save="cardio1-deadbug-s3"></label></div></summary>
-        <div class="content"><div class="meta">2 to 3 rounds</div><div class="howto">Lie on your back. Arms up, knees up. Extend opposite arm and leg slowly while keeping low back down.</div><div class="field"><label>Reps / notes</label><input data-save="cardio1-deadbug-note" placeholder="8/side" /></div></div>
-      </details>
-
-    </div>
-  </details>
-
-  <details class="section">
-    <summary>Lift B</summary>
-    <div class="section-body">
-
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Warmup Cardio</div></div><div class="sets"><span class="pill">8 to 12 min</span></div></summary>
-        <div class="content"><div class="meta">Easy to moderate.</div><div class="howto">Elliptical, bike, treadmill walk, or rower. Warm up first. It should not drain the workout.</div>
-          <div class="grid4">
-            <div class="field"><label>Type</label><input data-save="liftB-cardio-type" placeholder="Elliptical, bike..." /></div>
-            <div class="field"><label>RPM</label><input data-save="liftB-cardio-rpm" placeholder="45-50" /></div>
-            <div class="field"><label>Resistance</label><input data-save="liftB-cardio-resistance" placeholder="3" /></div>
-            <div class="field"><label>Incline</label><input data-save="liftB-cardio-incline" placeholder="5" /></div>
-          </div>
-        </div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge free">F</span><div class="name">Goblet Squat to Box / Bench</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftB-goblet-s1"></label><label>2 <input type="checkbox" data-save="liftB-goblet-s2"></label><label>3 <input type="checkbox" data-save="liftB-goblet-s3"></label></div></summary>
-        <div class="content"><div class="meta">3 x 8 to 10</div><div class="howto">Hold one dumbbell at chest. Sit back to a box or bench. Lightly touch it and stand back up. Controlled quad work with some knee stability demand.</div><div class="field"><label>Last weight used</label><input data-save="liftB-goblet-weight" placeholder="lbs" /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Lat Pulldown</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftB-pulldown-s1"></label><label>2 <input type="checkbox" data-save="liftB-pulldown-s2"></label><label>3 <input type="checkbox" data-save="liftB-pulldown-s3"></label></div></summary>
-        <div class="content"><div class="meta">3 x 10</div><div class="howto">Pull to upper chest. Chest up. Elbows down. No yanking.</div><div class="field"><label>Last weight used</label><input data-save="liftB-pulldown-weight" placeholder="lbs" /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Hamstring Curl</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftB-hamcurl-s1"></label><label>2 <input type="checkbox" data-save="liftB-hamcurl-s2"></label><label>3 <input type="checkbox" data-save="liftB-hamcurl-s3"></label></div></summary>
-        <div class="content"><div class="meta">3 x 10 to 12</div><div class="howto">Curl with control. Slow on the way back. Hamstrings help support the knee.</div><div class="field"><label>Last weight used</label><input data-save="liftB-hamcurl-weight" placeholder="lbs" /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Glute Bridge / Hip Thrust</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftB-bridge-s1"></label><label>2 <input type="checkbox" data-save="liftB-bridge-s2"></label></div></summary>
-        <div class="content"><div class="meta">2 x 12</div><div class="howto">Feet flat. Drive hips upward. Squeeze glutes. Avoid over-arching the low back. Strong glutes help with knee tracking.</div><div class="field"><label>Load / notes</label><input data-save="liftB-bridge-weight" placeholder="bodyweight, bar, desk at work..." /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Balance Board</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftB-balance-s1"></label><label>2 <input type="checkbox" data-save="liftB-balance-s2"></label><label>3 <input type="checkbox" data-save="liftB-balance-s3"></label></div></summary>
-        <div class="content"><div class="meta">2 to 3 rounds</div><div class="howto">Do this after the main work. Use support to get set, then let go and keep the board flat.</div><div class="field"><label>Hold times / notes</label><input data-save="liftB-balance-time" placeholder="20s / 20s / 15s" /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Dead Bug / Side Plank</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftB-deadbug-s1"></label><label>2 <input type="checkbox" data-save="liftB-deadbug-s2"></label><label>3 <input type="checkbox" data-save="liftB-deadbug-s3"></label></div></summary>
-        <div class="content"><div class="meta">2 to 3 rounds</div><div class="howto">Pick one. Dead bug for controlled core work. Side plank for side-core stability.</div><div class="field"><label>Reps / hold times</label><input data-save="liftB-deadbug-note" placeholder="8/side or 20 sec" /></div></div>
-      </details>
-
-    </div>
-  </details>
-
-  <details class="section">
-    <summary>Cardio 2</summary>
-    <div class="section-body">
-
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Steady Cardio</div></div><div class="sets"><span class="pill">20 to 30 min</span></div></summary>
-        <div class="content"><div class="meta">Easy to moderate.</div><div class="howto">This is the extra day that helps you get back to pickup shape without pounding your joints.</div>
-          <div class="grid4">
-            <div class="field"><label>Type</label><input data-save="cardio2-type" placeholder="Elliptical, bike..." /></div>
-            <div class="field"><label>RPM</label><input data-save="cardio2-rpm" placeholder="45-50" /></div>
-            <div class="field"><label>Resistance</label><input data-save="cardio2-resistance" placeholder="3" /></div>
-            <div class="field"><label>Incline</label><input data-save="cardio2-incline" placeholder="5" /></div>
-          </div>
-        </div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Pallof Press</div></div><div class="sets"><label>1 <input type="checkbox" data-save="cardio2-pallof-s1"></label><label>2 <input type="checkbox" data-save="cardio2-pallof-s2"></label><label>3 <input type="checkbox" data-save="cardio2-pallof-s3"></label></div></summary>
-        <div class="content"><div class="meta">2 to 3 x 10 each side</div><div class="howto">Stand sideways to the cable. Press straight out and resist being twisted. Good core stability work.</div><div class="field"><label>Last weight used</label><input data-save="cardio2-pallof-weight" placeholder="lbs" /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Balance Board</div></div><div class="sets"><label>1 <input type="checkbox" data-save="cardio2-balance-s1"></label><label>2 <input type="checkbox" data-save="cardio2-balance-s2"></label><label>3 <input type="checkbox" data-save="cardio2-balance-s3"></label></div></summary>
-        <div class="content"><div class="meta">3 rounds</div><div class="howto">Keep it flat as long as you can. This targets the stabilizers you said you want stronger.</div><div class="field"><label>Hold times / notes</label><input data-save="cardio2-balance-time" placeholder="25s / 20s / 18s" /></div></div>
-      </details>
-
-    </div>
-  </details>
-
-  <details class="section">
-    <summary>Lift C</summary>
-    <div class="section-body">
-
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Warmup Cardio</div></div><div class="sets"><span class="pill">8 to 12 min</span></div></summary>
-        <div class="content"><div class="meta">Easy to moderate.</div><div class="howto">Steady elliptical or other low-impact cardio. Good place to add total conditioning without running.</div>
-          <div class="grid4">
-            <div class="field"><label>Type</label><input data-save="liftC-cardio-type" placeholder="Elliptical, bike..." /></div>
-            <div class="field"><label>RPM</label><input data-save="liftC-cardio-rpm" placeholder="45-50" /></div>
-            <div class="field"><label>Resistance</label><input data-save="liftC-cardio-resistance" placeholder="3" /></div>
-            <div class="field"><label>Incline</label><input data-save="liftC-cardio-incline" placeholder="5" /></div>
-          </div>
-        </div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Assisted Split Squat / Reverse Lunge</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftC-lunge-s1"></label><label>2 <input type="checkbox" data-save="liftC-lunge-s2"></label></div></summary>
-        <div class="content"><div class="meta">2 x 8 each leg</div><div class="howto">Hold support if needed. Stay controlled. Keep range of motion knee-friendly.</div><div class="field"><label>Load / notes</label><input data-save="liftC-lunge-weight" placeholder="bodyweight or DBs" /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Incline Press or Backup Press</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftC-press-s1"></label><label>2 <input type="checkbox" data-save="liftC-press-s2"></label><label>3 <input type="checkbox" data-save="liftC-press-s3"></label></div></summary>
-        <div class="content"><div class="meta">3 x 8 to 10</div><div class="howto">Incline press if open. Shoulder press if not. Enough upper work to stay balanced, but not the focus.</div><div class="field"><label>Last weight used</label><input data-save="liftC-press-weight" placeholder="lbs" /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Cable or Machine Row</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftC-row-s1"></label><label>2 <input type="checkbox" data-save="liftC-row-s2"></label><label>3 <input type="checkbox" data-save="liftC-row-s3"></label></div></summary>
-        <div class="content"><div class="meta">3 x 10</div><div class="howto">Pull to torso. Squeeze shoulder blades. Smooth reps only.</div><div class="field"><label>Last weight used</label><input data-save="liftC-row-weight" placeholder="lbs" /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Leg Curl or Light Leg Extension</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftC-legcurl-s1"></label><label>2 <input type="checkbox" data-save="liftC-legcurl-s2"></label></div></summary>
-        <div class="content"><div class="meta">2 x 12</div><div class="howto">Use curl first if your knee likes it better. Extension is okay if it feels fine in the muscle and not the joint.</div><div class="field"><label>Last weight used</label><input data-save="liftC-legcurl-weight" placeholder="lbs" /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge free">F</span><div class="name">Calf Raises</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftC-calf-s1"></label><label>2 <input type="checkbox" data-save="liftC-calf-s2"></label><label>3 <input type="checkbox" data-save="liftC-calf-s3"></label></div></summary>
-        <div class="content"><div class="meta">3 x 12 to 15</div><div class="howto">Up controlled, pause, down slow. Build tissue tolerance first. No explosive reps for now.</div><div class="field"><label>Last weight used</label><input data-save="liftC-calf-weight" placeholder="total lbs" /></div></div>
-      </details>
-
-      <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Pallof Press</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftC-pallof-s1"></label><label>2 <input type="checkbox" data-save="liftC-pallof-s2"></label><label>3 <input type="checkbox" data-save="liftC-pallof-s3"></label></div></summary>
-        <div class="content"><div class="meta">2 to 3 sets</div><div class="howto">Stand sideways to the cable and press straight out. Resist rotation. Good core stability work.</div><div class="field"><label>Last weight used</label><input data-save="liftC-pallof-weight" placeholder="lbs" /></div></div>
-      </details>
-
-    </div>
-  </details>
+  <details class="section"><summary>Lift C</summary><div class="section-body">
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Warmup Cardio</div></div><div class="sets"><span class="pill">8 to 13 min</span></div></summary><div class="content"><div class="meta">Easy to moderate.</div><div class="grid4"><div class="field"><label>Type</label><input data-save="liftC-cardio-type"></div><div class="field"><label>RPM</label><input data-save="liftC-cardio-rpm"></div><div class="field"><label>Resistance</label><input data-save="liftC-cardio-resistance"></div><div class="field"><label>Incline</label><input data-save="liftC-cardio-incline"></div></div><div class="field" style="margin-top:10px"><label>Cardio notes</label><textarea data-save="liftC-cardio-notes"></textarea></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge home">H</span><div class="name">Assisted Split Squat / Reverse Lunge</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftC-lunge-s1"></label><label>2 <input type="checkbox" data-save="liftC-lunge-s2"></label></div></summary><div class="content"><div class="meta">2 x 8 each leg</div><div class="howto">Controlled. Knee-friendly range.</div><div class="grid2"><div class="field"><label>Load / notes</label><input data-save="liftC-lunge-weight"></div><div class="field"><label>Difficulty</label><select data-save="liftC-lunge-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftC-lunge-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Incline Press or Backup Press</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftC-press-s1"></label><label>2 <input type="checkbox" data-save="liftC-press-s2"></label><label>3 <input type="checkbox" data-save="liftC-press-s3"></label></div></summary><div class="content"><div class="meta">3 x 10 to 13</div><div class="howto">Incline press if open. Shoulder press if not.</div><div class="grid2"><div class="field"><label>Suggested / actual weight</label><input data-save="liftC-press-weight" data-weight="true"></div><div class="field"><label>Weekly increase if easy</label><input data-save="liftC-press-increment" data-weight-step="true"></div><div class="field"><label>Difficulty</label><select data-save="liftC-press-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftC-press-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Cable or Machine Row</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftC-row-s1"></label><label>2 <input type="checkbox" data-save="liftC-row-s2"></label><label>3 <input type="checkbox" data-save="liftC-row-s3"></label></div></summary><div class="content"><div class="meta">3 x 10 to 13</div><div class="howto">Pull to torso. Squeeze shoulder blades.</div><div class="grid2"><div class="field"><label>Suggested / actual weight</label><input data-save="liftC-row-weight" data-weight="true"></div><div class="field"><label>Weekly increase if easy</label><input data-save="liftC-row-increment" data-weight-step="true"></div><div class="field"><label>Difficulty</label><select data-save="liftC-row-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftC-row-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Leg Curl or Light Leg Extension</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftC-legassist-s1"></label><label>2 <input type="checkbox" data-save="liftC-legassist-s2"></label><label>3 <input type="checkbox" data-save="liftC-legassist-s3"></label></div></summary><div class="content"><div class="meta">3 x 10 to 13</div><div class="howto">Use what the knee likes better. Smooth reps only.</div><div class="grid2"><div class="field"><label>Suggested / actual weight</label><input data-save="liftC-legassist-weight" data-weight="true"></div><div class="field"><label>Weekly increase if easy</label><input data-save="liftC-legassist-increment" data-weight-step="true"></div><div class="field"><label>Difficulty</label><select data-save="liftC-legassist-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftC-legassist-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge free">F</span><div class="name">Calf Raises</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftC-calf-s1"></label><label>2 <input type="checkbox" data-save="liftC-calf-s2"></label><label>3 <input type="checkbox" data-save="liftC-calf-s3"></label></div></summary><div class="content"><div class="meta">3 x 12 to 13</div><div class="howto">Up controlled, pause, down slow.</div><div class="grid2"><div class="field"><label>Suggested / actual weight</label><input data-save="liftC-calf-weight" data-weight="true"></div><div class="field"><label>Weekly increase if easy</label><input data-save="liftC-calf-increment" data-weight-step="true"></div><div class="field"><label>Difficulty</label><select data-save="liftC-calf-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftC-calf-notes"></textarea></div></div></div></details>
+    <details class="exercise"><summary><div class="left"><span class="badge machine">M</span><div class="name">Pallof Press</div></div><div class="sets"><label>1 <input type="checkbox" data-save="liftC-pallof-s1"></label><label>2 <input type="checkbox" data-save="liftC-pallof-s2"></label><label>3 <input type="checkbox" data-save="liftC-pallof-s3"></label></div></summary><div class="content"><div class="meta">2 to 3 sets</div><div class="howto">Resist rotation. Good core stability work.</div><div class="grid2"><div class="field"><label>Suggested / actual weight</label><input data-save="liftC-pallof-weight" data-weight="true"></div><div class="field"><label>Weekly increase if easy</label><input data-save="liftC-pallof-increment" data-weight-step="true"></div><div class="field"><label>Difficulty</label><select data-save="liftC-pallof-difficulty"><option>easy</option><option selected>medium</option><option>hard</option></select></div><div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="liftC-pallof-notes"></textarea></div></div></div></details>
+  </div></details>
 </div>
 
 <script>
-  const els = document.querySelectorAll('[data-save]');
-  for (const el of els) {
-    const key = 'gymtracker:' + el.dataset.save;
-    if (el.type === 'checkbox') {
-      el.checked = localStorage.getItem(key) === 'true';
-      el.addEventListener('change', () => localStorage.setItem(key, String(el.checked)));
-    } else {
-      el.value = localStorage.getItem(key) || '';
-      el.addEventListener('input', () => localStorage.setItem(key, el.value));
-    }
-  }
+const P='gymtracker:';
+const META=P+'meta';
+function parseNum(v){if(!v)return null;const m=String(v).match(/-?\d+(\.\d+)?/);return m?Number(m[0]):null}
+function getMeta(){try{return JSON.parse(localStorage.getItem(META))||{currentWeek:1,lastTransition:null,history:[]}}catch(e){return {currentWeek:1,lastTransition:null,history:[]}}}
+function setMeta(m){localStorage.setItem(META,JSON.stringify(m))}
+function updateMetaUI(){const m=getMeta();document.getElementById('currentWeek').textContent=m.currentWeek||1;document.getElementById('lastTransition').textContent=m.lastTransition||'none'}
+function init(){document.querySelectorAll('[data-save]').forEach(el=>{const k=P+el.dataset.save;if(el.type==='checkbox'){el.checked=localStorage.getItem(k)==='true';el.addEventListener('change',()=>localStorage.setItem(k,String(el.checked)))}else{const saved=localStorage.getItem(k);if(saved!==null)el.value=saved; if(el.tagName==='SELECT'&&saved===null){el.value='medium';localStorage.setItem(k,'medium')} el.addEventListener('input',()=>localStorage.setItem(k,el.value)); el.addEventListener('change',()=>localStorage.setItem(k,el.value));}});document.querySelectorAll('[data-weight-step="true"]').forEach(el=>{const k=P+el.dataset.save;if(!localStorage.getItem(k)){el.value='5';localStorage.setItem(k,'5')}else{el.value=localStorage.getItem(k)}})}
+function clearChecks(){document.querySelectorAll('input[type="checkbox"][data-save]').forEach(el=>{el.checked=false;localStorage.setItem(P+el.dataset.save,'false')})}
+function transitionWeek(){const meta=getMeta();const snap={week:meta.currentWeek||1,transitionedAt:new Date().toLocaleString(),fields:{}};document.querySelectorAll('[data-save]').forEach(el=>{snap.fields[el.dataset.save]=el.type==='checkbox'?el.checked:el.value});document.querySelectorAll('input[data-weight="true"]').forEach(el=>{const base=el.dataset.save.replace(/-weight$/,'');const current=parseNum(el.value);const inc=parseNum((document.querySelector(`[data-save="${base}-increment"]`)||{}).value)||5;const diff=(document.querySelector(`[data-save="${base}-difficulty"]`)||{}).value||'medium';let next=el.value;if(current!==null){if(diff==='easy')next=String(current+inc);else if(diff==='hard')next=String(Math.max(0,current-inc));else next=String(current)}localStorage.setItem(P+el.dataset.save,next);el.value=next});document.querySelectorAll('[data-save]').forEach(el=>{const id=el.dataset.save;const preserve=id.endsWith('-weight')||id.endsWith('-increment');if(preserve)return;if(el.type==='checkbox'){el.checked=false;localStorage.setItem(P+id,'false')}else if(el.tagName==='SELECT'){el.value='medium';localStorage.setItem(P+id,'medium')}else{el.value='';localStorage.setItem(P+id,'')}});meta.history=meta.history||[];meta.history.push(snap);meta.currentWeek=(meta.currentWeek||1)+1;meta.lastTransition=new Date().toLocaleDateString();setMeta(meta);updateMetaUI()}
+window.addEventListener('DOMContentLoaded',()=>{init();updateMetaUI();document.getElementById('transitionBtn').addEventListener('click',transitionWeek);document.getElementById('clearChecksBtn').addEventListener('click',clearChecks)})
 </script>
 </body>
 </html>
