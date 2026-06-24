@@ -1,0 +1,921 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Connor Workout Tracker</title>
+  <style>
+    :root{
+      --bg:#0f172a; --panel:#111827; --panel2:#1f2937; --text:#e5e7eb; --muted:#94a3b8;
+      --line:#334155; --lift:#2563eb; --cardio:#16a34a; --core:#eab308; --green:#16a34a;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px 12px 40px}
+    h1{text-align:center;margin:8px 0 8px;font-size:1.55rem}
+    .top-note{text-align:center;color:var(--muted);font-size:.95rem;margin:0 0 16px}
+    .top-bar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:center; margin:0 0 16px}
+    button{border:1px solid #475569;background:#111827;color:var(--text);border-radius:10px;padding:10px 14px;font-size:.95rem;cursor:pointer}
+    button.primary{background:var(--green); border-color:var(--green); color:white; font-weight:700}
+    button.secondary{background:#0b1220}
+    .legend{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;color:var(--muted);font-size:.85rem;margin-bottom:12px}
+    .legend span{display:flex;align-items:center;gap:6px}
+    .badge{width:22px;height:22px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#fff;flex:0 0 auto}
+    .lift{background:var(--lift)} .cardio{background:var(--cardio)} .core{background:var(--core);color:#111827}
+    details.section{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin:10px 0;overflow:hidden}
+    details.section > summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:700;background:var(--panel2);font-size:1.05rem}
+    details.section > summary::-webkit-details-marker{display:none}
+    .section-body{padding:10px 10px 12px}
+    details.item{border:1px solid var(--line);border-radius:12px;margin:8px 0;overflow:hidden;background:#0b1220}
+    details.item > summary{list-style:none;cursor:pointer;padding:12px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    details.item > summary::-webkit-details-marker{display:none}
+    .left{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+    .name{font-weight:700;line-height:1.2}
+    .checks{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+    .checks label{display:flex;align-items:center;gap:3px;color:var(--muted);font-size:.78rem}
+    .pill{border:1px solid var(--line);background:#0b1220;border-radius:999px;padding:4px 8px;color:var(--muted);font-size:.8rem;display:inline-block}
+    .content{padding:0 12px 12px;border-top:1px solid var(--line)}
+    .meta{color:var(--muted);margin:10px 0 8px;font-size:.92rem}
+    .target{line-height:1.35;color:#d1d5db;font-size:.95rem;margin:8px 0 12px}
+    .grid2,.grid3,.grid4{display:grid;gap:10px}
+    .grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .field{display:flex;flex-direction:column;gap:4px}
+    .field label{color:var(--muted);font-size:.82rem}
+    input, select, textarea{width:100%;border:1px solid #475569;background:#111827;color:var(--text);border-radius:10px;padding:10px 11px;font-size:1rem}
+    textarea{min-height:72px; resize:vertical}
+    .hint{color:var(--muted); font-size:.82rem; margin-top:4px}
+    .week-box,.export-box{border:1px solid var(--line); border-radius:12px; background:#0b1220; padding:12px; margin-bottom:14px}
+    .week-meta{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; color:var(--muted); font-size:.9rem}
+    #exportArea{min-height:180px}
+    .history-item{border-top:1px solid var(--line); padding:8px 0; color:var(--muted); font-size:.9rem}
+    .history-item:first-child{border-top:none}
+    @media (max-width:800px){.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:640px){.grid2,.grid3,.grid4{grid-template-columns:1fr} details.item > summary{align-items:flex-start} .checks{flex-wrap:wrap;justify-content:flex-end}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Connor Workout Tracker</h1>
+  <div class="top-note">Weekly training plan with targets, logging, export, and next-week suggestions.</div>
+
+  <div class="week-box">
+    <div class="week-meta">
+      <div><strong>Current week:</strong> <span id="currentWeek">1</span></div>
+      <div><strong>Last transition:</strong> <span id="lastTransition">none</span></div>
+      <div><strong>Saved weeks:</strong> <span id="savedWeeks">0</span></div>
+    </div>
+    <div class="top-bar">
+      <button class="primary" id="transitionBtn">Transition to Next Week</button>
+      <button id="exportBtn">Export Current Week</button>
+      <button id="exportLastBtn">Export Last Saved Week</button>
+      <button id="clearChecksBtn">Clear This Week's Checkboxes</button>
+    </div>
+    <div class="hint">Transition saves this week, clears checkboxes and notes, and rolls working weights forward based on difficulty.</div>
+  </div>
+
+  <div class="export-box">
+    <div class="top-bar"><strong style="color:var(--muted)">Copy and paste this back into chat for updates</strong></div>
+    <textarea id="exportArea" placeholder="Press Export Current Week or Export Last Saved Week"></textarea>
+    <div class="top-bar"><button class="secondary" id="copyExportBtn">Copy Export Text</button></div>
+  </div>
+
+  <details class="section">
+    <summary>Saved Week History</summary>
+    <div class="section-body" id="historyList">
+      <div class="hint">No saved weeks yet.</div>
+    </div>
+  </details>
+
+  <div class="legend">
+    <span><i class="badge cardio">C</i> Cardio / swim</span>
+    <span><i class="badge lift">L</i> Lift</span>
+    <span><i class="badge core">K</i> Core</span>
+  </div>
+<details class="section"><summary>Sunday</summary><div class="section-body">
+    <details class="item">
+      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Long Bike</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">15–56 miles. 300–400 grams of carbs before.</div>
+        <div class="grid4">
+          <div class="field"><label>Total distance</label><input data-save="sun-bike-long-distance" placeholder="miles or yards" /></div>
+          <div class="field"><label>Total time</label><input data-save="sun-bike-long-time" placeholder="45:00" /></div>
+          <div class="field"><label>Average HR</label><input data-save="sun-bike-long-avg-hr" placeholder="135" /></div>
+          <div class="field"><label>Avg pace / split summary</label><input data-save="sun-bike-long-pace" placeholder="10:15/mi or split summary" /></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="sun-bike-long-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+      </div>
+    </details>
+    </div></details>
+<details class="section"><summary>Monday</summary><div class="section-body">
+    <details class="item">
+      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Swim 1 Block</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">50-100-150-...-500 yd with 30–45 second rest.</div>
+        <div class="grid4">
+          <div class="field"><label>Total distance</label><input data-save="mon-swim1-distance" placeholder="miles or yards" /></div>
+          <div class="field"><label>Total time</label><input data-save="mon-swim1-time" placeholder="45:00" /></div>
+          <div class="field"><label>Average HR</label><input data-save="mon-swim1-avg-hr" placeholder="135" /></div>
+          <div class="field"><label>Avg pace / split summary</label><input data-save="mon-swim1-pace" placeholder="10:15/mi or split summary" /></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="mon-swim1-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Bench Press</div></div><div class="checks"><label>1 <input type="checkbox" data-save="mon-bench-s1"></label><label>2 <input type="checkbox" data-save="mon-bench-s2"></label><label>3 <input type="checkbox" data-save="mon-bench-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 5–8 @ 95–115 lbs</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="mon-bench-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="mon-bench-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="mon-bench-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="mon-bench-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="mon-bench-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Incline Bench</div></div><div class="checks"><label>1 <input type="checkbox" data-save="mon-incline-s1"></label><label>2 <input type="checkbox" data-save="mon-incline-s2"></label><label>3 <input type="checkbox" data-save="mon-incline-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 5–8 @ 65–95 lbs</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="mon-incline-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="mon-incline-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="mon-incline-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="mon-incline-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="mon-incline-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Pec Deck</div></div><div class="checks"><label>1 <input type="checkbox" data-save="mon-pecdeck-s1"></label><label>2 <input type="checkbox" data-save="mon-pecdeck-s2"></label><label>3 <input type="checkbox" data-save="mon-pecdeck-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 6–8 @ 90–110 lbs</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="mon-pecdeck-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="mon-pecdeck-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="mon-pecdeck-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="mon-pecdeck-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="mon-pecdeck-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Dips</div></div><div class="checks"><label>1 <input type="checkbox" data-save="mon-dips-s1"></label><label>2 <input type="checkbox" data-save="mon-dips-s2"></label><label>3 <input type="checkbox" data-save="mon-dips-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">6 reps, bodyweight to +30 lbs</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="mon-dips-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="mon-dips-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="mon-dips-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="mon-dips-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="mon-dips-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Plank</div></div><div class="checks"><label>1 <input type="checkbox" data-save="mon-plank-s1"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">2 minutes</div>
+        <div class="grid2">
+          <div class="field"><label>Completed</label><input data-save="mon-plank-done" placeholder="2:00 or 75/side" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="mon-plank-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="mon-plank-notes" placeholder="form, rest breaks, adjustments, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Russian Twists</div></div><div class="checks"><label>1 <input type="checkbox" data-save="mon-russian-s1"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">75 each side</div>
+        <div class="grid2">
+          <div class="field"><label>Completed</label><input data-save="mon-russian-done" placeholder="2:00 or 75/side" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="mon-russian-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="mon-russian-notes" placeholder="form, rest breaks, adjustments, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Crunches</div></div><div class="checks"><label>1 <input type="checkbox" data-save="mon-crunches-s1"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">75</div>
+        <div class="grid2">
+          <div class="field"><label>Completed</label><input data-save="mon-crunches-done" placeholder="2:00 or 75/side" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="mon-crunches-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="mon-crunches-notes" placeholder="form, rest breaks, adjustments, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge core">K</span><div class="name">6 Inches</div></div><div class="checks"><label>1 <input type="checkbox" data-save="mon-sixinches-s1"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">2 x 1 minute</div>
+        <div class="grid2">
+          <div class="field"><label>Completed</label><input data-save="mon-sixinches-done" placeholder="2:00 or 75/side" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="mon-sixinches-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="mon-sixinches-notes" placeholder="form, rest breaks, adjustments, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    </div></details>
+<details class="section"><summary>Tuesday</summary><div class="section-body">
+    <details class="item">
+      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Run 1 Base</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">Base-building run. 4.5–5.5 miles at 10:15–10:45 pace, 125–135 BPM.</div>
+        <div class="grid4">
+          <div class="field"><label>Total distance</label><input data-save="tue-run-base-distance" placeholder="miles or yards" /></div>
+          <div class="field"><label>Total time</label><input data-save="tue-run-base-time" placeholder="45:00" /></div>
+          <div class="field"><label>Average HR</label><input data-save="tue-run-base-avg-hr" placeholder="135" /></div>
+          <div class="field"><label>Avg pace / split summary</label><input data-save="tue-run-base-pace" placeholder="10:15/mi or split summary" /></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="tue-run-base-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Bulgarian Split Squat</div></div><div class="checks"><label>1 <input type="checkbox" data-save="tue-bulgarian-s1"></label><label>2 <input type="checkbox" data-save="tue-bulgarian-s2"></label><label>3 <input type="checkbox" data-save="tue-bulgarian-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 10–12 each leg</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="tue-bulgarian-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="tue-bulgarian-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="tue-bulgarian-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="tue-bulgarian-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="tue-bulgarian-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Calf Raises</div></div><div class="checks"><label>1 <input type="checkbox" data-save="tue-calf-s1"></label><label>2 <input type="checkbox" data-save="tue-calf-s2"></label><label>3 <input type="checkbox" data-save="tue-calf-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">4 x 12–15</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="tue-calf-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="tue-calf-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="tue-calf-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="tue-calf-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="tue-calf-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Seated Leg Curl</div></div><div class="checks"><label>1 <input type="checkbox" data-save="tue-legcurl-s1"></label><label>2 <input type="checkbox" data-save="tue-legcurl-s2"></label><label>3 <input type="checkbox" data-save="tue-legcurl-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 12–15</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="tue-legcurl-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="tue-legcurl-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="tue-legcurl-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="tue-legcurl-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="tue-legcurl-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Seated Leg Press</div></div><div class="checks"><label>1 <input type="checkbox" data-save="tue-legpress-s1"></label><label>2 <input type="checkbox" data-save="tue-legpress-s2"></label><label>3 <input type="checkbox" data-save="tue-legpress-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 6–10</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="tue-legpress-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="tue-legpress-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="tue-legpress-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="tue-legpress-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="tue-legpress-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    </div></details>
+<details class="section"><summary>Wednesday</summary><div class="section-body">
+    <details class="item">
+      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Bike Short</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">Mid-week ride, 10–15 miles.</div>
+        <div class="grid4">
+          <div class="field"><label>Total distance</label><input data-save="wed-bike-short-distance" placeholder="miles or yards" /></div>
+          <div class="field"><label>Total time</label><input data-save="wed-bike-short-time" placeholder="45:00" /></div>
+          <div class="field"><label>Average HR</label><input data-save="wed-bike-short-avg-hr" placeholder="135" /></div>
+          <div class="field"><label>Avg pace / split summary</label><input data-save="wed-bike-short-pace" placeholder="10:15/mi or split summary" /></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="wed-bike-short-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Swim Mid</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">200 easy, 2 x 25 kickboard, 4 x 75y with 30s rest, 4 x 75y with 20s rest, 100y arm, 100y free.</div>
+        <div class="grid4">
+          <div class="field"><label>Total distance</label><input data-save="wed-swim-mid-distance" placeholder="miles or yards" /></div>
+          <div class="field"><label>Total time</label><input data-save="wed-swim-mid-time" placeholder="45:00" /></div>
+          <div class="field"><label>Average HR</label><input data-save="wed-swim-mid-avg-hr" placeholder="135" /></div>
+          <div class="field"><label>Avg pace / split summary</label><input data-save="wed-swim-mid-pace" placeholder="10:15/mi or split summary" /></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="wed-swim-mid-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Bench Press</div></div><div class="checks"><label>1 <input type="checkbox" data-save="wed-bench-s1"></label><label>2 <input type="checkbox" data-save="wed-bench-s2"></label><label>3 <input type="checkbox" data-save="wed-bench-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 5–8 @ 95–115 lbs</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="wed-bench-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="wed-bench-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="wed-bench-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="wed-bench-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-bench-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Incline Bench</div></div><div class="checks"><label>1 <input type="checkbox" data-save="wed-incline-s1"></label><label>2 <input type="checkbox" data-save="wed-incline-s2"></label><label>3 <input type="checkbox" data-save="wed-incline-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 5–8 @ 65–95 lbs</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="wed-incline-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="wed-incline-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="wed-incline-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="wed-incline-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-incline-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Pec Deck</div></div><div class="checks"><label>1 <input type="checkbox" data-save="wed-pecdeck-s1"></label><label>2 <input type="checkbox" data-save="wed-pecdeck-s2"></label><label>3 <input type="checkbox" data-save="wed-pecdeck-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 6–8 @ 90–110 lbs</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="wed-pecdeck-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="wed-pecdeck-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="wed-pecdeck-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="wed-pecdeck-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-pecdeck-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Dips</div></div><div class="checks"><label>1 <input type="checkbox" data-save="wed-dips-s1"></label><label>2 <input type="checkbox" data-save="wed-dips-s2"></label><label>3 <input type="checkbox" data-save="wed-dips-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">6 reps, bodyweight to +30 lbs</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="wed-dips-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="wed-dips-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="wed-dips-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="wed-dips-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-dips-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Plank</div></div><div class="checks"><label>1 <input type="checkbox" data-save="wed-plank-s1"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">2 minutes</div>
+        <div class="grid2">
+          <div class="field"><label>Completed</label><input data-save="wed-plank-done" placeholder="2:00 or 75/side" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="wed-plank-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-plank-notes" placeholder="form, rest breaks, adjustments, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Russian Twists</div></div><div class="checks"><label>1 <input type="checkbox" data-save="wed-russian-s1"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">75 each side</div>
+        <div class="grid2">
+          <div class="field"><label>Completed</label><input data-save="wed-russian-done" placeholder="2:00 or 75/side" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="wed-russian-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-russian-notes" placeholder="form, rest breaks, adjustments, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Crunches</div></div><div class="checks"><label>1 <input type="checkbox" data-save="wed-crunches-s1"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">75</div>
+        <div class="grid2">
+          <div class="field"><label>Completed</label><input data-save="wed-crunches-done" placeholder="2:00 or 75/side" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="wed-crunches-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-crunches-notes" placeholder="form, rest breaks, adjustments, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge core">K</span><div class="name">6 Inches</div></div><div class="checks"><label>1 <input type="checkbox" data-save="wed-sixinches-s1"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">2 x 1 minute</div>
+        <div class="grid2">
+          <div class="field"><label>Completed</label><input data-save="wed-sixinches-done" placeholder="2:00 or 75/side" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="wed-sixinches-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-sixinches-notes" placeholder="form, rest breaks, adjustments, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    </div></details>
+<details class="section"><summary>Thursday</summary><div class="section-body">
+    <details class="item">
+      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Run 2 Long</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">7–9 miles at 121–140 BPM.</div>
+        <div class="grid4">
+          <div class="field"><label>Total distance</label><input data-save="thu-run-long-distance" placeholder="miles or yards" /></div>
+          <div class="field"><label>Total time</label><input data-save="thu-run-long-time" placeholder="45:00" /></div>
+          <div class="field"><label>Average HR</label><input data-save="thu-run-long-avg-hr" placeholder="135" /></div>
+          <div class="field"><label>Avg pace / split summary</label><input data-save="thu-run-long-pace" placeholder="10:15/mi or split summary" /></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="thu-run-long-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+      </div>
+    </details>
+    </div></details>
+<details class="section"><summary>Friday</summary><div class="section-body">
+    <details class="item">
+      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Swim Distance</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">4 x 200 with 2 minute rest, 800 total.</div>
+        <div class="grid4">
+          <div class="field"><label>Total distance</label><input data-save="fri-swim-distance-distance" placeholder="miles or yards" /></div>
+          <div class="field"><label>Total time</label><input data-save="fri-swim-distance-time" placeholder="45:00" /></div>
+          <div class="field"><label>Average HR</label><input data-save="fri-swim-distance-avg-hr" placeholder="135" /></div>
+          <div class="field"><label>Avg pace / split summary</label><input data-save="fri-swim-distance-pace" placeholder="10:15/mi or split summary" /></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="fri-swim-distance-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Cable Lateral Raises</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-cablelat-s1"></label><label>2 <input type="checkbox" data-save="fri-cablelat-s2"></label><label>3 <input type="checkbox" data-save="fri-cablelat-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 12–15</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="fri-cablelat-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="fri-cablelat-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="fri-cablelat-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="fri-cablelat-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="fri-cablelat-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Dumbbell Lateral Raises</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-dblat-s1"></label><label>2 <input type="checkbox" data-save="fri-dblat-s2"></label><label>3 <input type="checkbox" data-save="fri-dblat-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 8–12</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="fri-dblat-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="fri-dblat-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="fri-dblat-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="fri-dblat-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="fri-dblat-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Bent-Over Flyes</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-flys-s1"></label><label>2 <input type="checkbox" data-save="fri-flys-s2"></label><label>3 <input type="checkbox" data-save="fri-flys-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 15–20</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="fri-flys-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="fri-flys-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="fri-flys-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="fri-flys-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="fri-flys-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Face Pulls</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-facepulls-s1"></label><label>2 <input type="checkbox" data-save="fri-facepulls-s2"></label><label>3 <input type="checkbox" data-save="fri-facepulls-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 12–15</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="fri-facepulls-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="fri-facepulls-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="fri-facepulls-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="fri-facepulls-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="fri-facepulls-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Shoulder Press</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-shoulderpress-s1"></label><label>2 <input type="checkbox" data-save="fri-shoulderpress-s2"></label><label>3 <input type="checkbox" data-save="fri-shoulderpress-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">3 x 6–10</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="fri-shoulderpress-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="fri-shoulderpress-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="fri-shoulderpress-reps" placeholder="12/12/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="fri-shoulderpress-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="fri-shoulderpress-notes" placeholder="form, substitutions, varied set weights, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Plank</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-plank-s1"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">2 minutes</div>
+        <div class="grid2">
+          <div class="field"><label>Completed</label><input data-save="fri-plank-done" placeholder="2:00 or 75/side" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="fri-plank-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="fri-plank-notes" placeholder="form, rest breaks, adjustments, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Russian Twists</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-russian-s1"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">75 each side</div>
+        <div class="grid2">
+          <div class="field"><label>Completed</label><input data-save="fri-russian-done" placeholder="2:00 or 75/side" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="fri-russian-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="fri-russian-notes" placeholder="form, rest breaks, adjustments, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Crunches</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-crunches-s1"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">75</div>
+        <div class="grid2">
+          <div class="field"><label>Completed</label><input data-save="fri-crunches-done" placeholder="2:00 or 75/side" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="fri-crunches-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="fri-crunches-notes" placeholder="form, rest breaks, adjustments, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge core">K</span><div class="name">6 Inches</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-sixinches-s1"></label></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">2 x 1 minute</div>
+        <div class="grid2">
+          <div class="field"><label>Completed</label><input data-save="fri-sixinches-done" placeholder="2:00 or 75/side" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="fri-sixinches-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="fri-sixinches-notes" placeholder="form, rest breaks, adjustments, etc."></textarea></div>
+        </div>
+      </div>
+    </details>
+    </div></details>
+<details class="section"><summary>Saturday</summary><div class="section-body">
+    <details class="item">
+      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Run Flush</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
+      <div class="content">
+        <div class="meta">Target</div>
+        <div class="target">5K at about 121 BPM.</div>
+        <div class="grid4">
+          <div class="field"><label>Total distance</label><input data-save="sat-run-flush-distance" placeholder="miles or yards" /></div>
+          <div class="field"><label>Total time</label><input data-save="sat-run-flush-time" placeholder="45:00" /></div>
+          <div class="field"><label>Average HR</label><input data-save="sat-run-flush-avg-hr" placeholder="135" /></div>
+          <div class="field"><label>Avg pace / split summary</label><input data-save="sat-run-flush-pace" placeholder="10:15/mi or split summary" /></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="sat-run-flush-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+      </div>
+    </details>
+    </div></details>
+
+</div>
+<script>
+const STORAGE_PREFIX = 'connortracker:';
+const META_KEY = STORAGE_PREFIX + 'meta';
+function loadMeta(){ try { return JSON.parse(localStorage.getItem(META_KEY)) || {currentWeek:1,lastTransition:null,history:[]}; } catch(e){ return {currentWeek:1,lastTransition:null,history:[]}; } }
+function saveMeta(meta){ localStorage.setItem(META_KEY, JSON.stringify(meta)); }
+function saveField(el){ const key = STORAGE_PREFIX + el.dataset.save; if (el.type === 'checkbox') localStorage.setItem(key, String(el.checked)); else localStorage.setItem(key, el.value); }
+function initFields(){
+  document.querySelectorAll('[data-save]').forEach(el => {
+    const key = STORAGE_PREFIX + el.dataset.save;
+    if (el.type === 'checkbox'){ el.checked = localStorage.getItem(key) === 'true'; el.addEventListener('change', () => saveField(el)); }
+    else { const saved = localStorage.getItem(key); if (saved !== null) el.value = saved; if (el.tagName === 'SELECT' && saved === null) el.value = 'medium'; el.addEventListener('input', () => saveField(el)); el.addEventListener('change', () => saveField(el)); }
+  });
+}
+function updateMetaUI(){ const meta = loadMeta(); document.getElementById('currentWeek').textContent = meta.currentWeek || 1; document.getElementById('lastTransition').textContent = meta.lastTransition || 'none'; document.getElementById('savedWeeks').textContent = (meta.history || []).length; renderHistory(); }
+function parseNumberLike(val){ if (!val) return null; const m = String(val).match(/-?\d+(\.\d+)?/); return m ? Number(m[0]) : null; }
+function currentSnapshot(){ const meta = loadMeta(); const snap = { week: meta.currentWeek || 1, savedAt: new Date().toLocaleString(), fields: {} }; document.querySelectorAll('[data-save]').forEach(el => { snap.fields[el.dataset.save] = el.type === 'checkbox' ? el.checked : el.value; }); return snap; }
+function formatSnapshot(snap){
+  const f = snap.fields || {}; const lines = [];
+  lines.push(`Week ${snap.week} export`); lines.push(`Saved: ${snap.savedAt || 'current view'}`); lines.push('');
+  const cardioItems = [
+    ['sun-bike-long','Sunday long bike'],['mon-swim1','Monday swim 1'],['tue-run-base','Tuesday base run'],
+    ['wed-bike-short','Wednesday short bike'],['wed-swim-mid','Wednesday swim'],['thu-run-long','Thursday long run'],
+    ['fri-swim-distance','Friday swim distance'],['sat-run-flush','Saturday flush run']
+  ];
+  const liftItems = [
+    ['mon-bench','Monday bench press'],['mon-incline','Monday incline bench'],['mon-pecdeck','Monday pec deck'],['mon-dips','Monday dips'],
+    ['tue-bulgarian','Tuesday Bulgarian split squat'],['tue-calf','Tuesday calf raises'],['tue-legcurl','Tuesday seated leg curl'],['tue-legpress','Tuesday seated leg press'],
+    ['wed-bench','Wednesday bench press'],['wed-incline','Wednesday incline bench'],['wed-pecdeck','Wednesday pec deck'],['wed-dips','Wednesday dips'],
+    ['fri-cablelat','Friday cable lateral raises'],['fri-dblat','Friday dumbbell lateral raises'],['fri-flys','Friday bent-over flyes'],['fri-facepulls','Friday face pulls'],['fri-shoulderpress','Friday shoulder press']
+  ];
+  const coreItems = [
+    ['mon-plank','Monday plank'],['mon-russian','Monday Russian twists'],['mon-crunches','Monday crunches'],['mon-sixinches','Monday 6 inches'],
+    ['wed-plank','Wednesday plank'],['wed-russian','Wednesday Russian twists'],['wed-crunches','Wednesday crunches'],['wed-sixinches','Wednesday 6 inches'],
+    ['fri-plank','Friday plank'],['fri-russian','Friday Russian twists'],['fri-crunches','Friday crunches'],['fri-sixinches','Friday 6 inches']
+  ];
+  function pushIf(label, val){ if (val !== undefined && val !== null && String(val).trim() !== '') lines.push(`${label}: ${val}`); }
+  function cardio(prefix, title){ lines.push(title); pushIf('  Distance', f[`${prefix}-distance`]); pushIf('  Time', f[`${prefix}-time`]); pushIf('  Average HR', f[`${prefix}-avg-hr`]); pushIf('  Pace / splits', f[`${prefix}-pace`]); pushIf('  Notes', f[`${prefix}-notes`]); lines.push(''); }
+  function lift(prefix, title){ const checks = [1,2,3,4].filter(i => f[`${prefix}-s${i}`] === true).length; lines.push(title); pushIf('  Sets checked', checks ? checks : ''); pushIf('  Weight', f[`${prefix}-weight`]); pushIf('  Reps', f[`${prefix}-reps`]); pushIf('  Difficulty', f[`${prefix}-difficulty`]); pushIf('  Notes', f[`${prefix}-notes`]); lines.push(''); }
+  function core(prefix, title){ const checks = [1].filter(i => f[`${prefix}-s${i}`] === true).length; lines.push(title); pushIf('  Completed', f[`${prefix}-done`]); pushIf('  Difficulty', f[`${prefix}-difficulty`]); pushIf('  Notes', f[`${prefix}-notes`]); if (checks) pushIf('  Checked', checks); lines.push(''); }
+  cardioItems.forEach(([p,t])=>cardio(p,t)); liftItems.forEach(([p,t])=>lift(p,t)); coreItems.forEach(([p,t])=>core(p,t));
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n');
+}
+function renderHistory(){
+  const meta = loadMeta(); const box = document.getElementById('historyList'); const hist = meta.history || [];
+  if (!hist.length){ box.innerHTML = '<div class="hint">No saved weeks yet.</div>'; return; }
+  box.innerHTML = hist.slice().reverse().map((h, idx) => { const actualIndex = hist.length - 1 - idx; return `<div class="history-item"><strong>Week ${h.week}</strong> saved ${h.savedAt || ''}<div class="top-bar" style="justify-content:flex-start; margin-top:8px"><button onclick="exportHistory(${actualIndex})">Export</button></div></div>`; }).join('');
+}
+function exportHistory(idx){ const meta = loadMeta(); const snap = (meta.history || [])[idx]; if (!snap) return; document.getElementById('exportArea').value = formatSnapshot(snap); }
+window.exportHistory = exportHistory;
+function transitionWeek(){
+  const meta = loadMeta(); const snapshot = currentSnapshot();
+  document.querySelectorAll('input[data-weight="true"]').forEach(el => {
+    const baseKey = el.dataset.save; const basePrefix = baseKey.replace(/-weight$/, '');
+    const difficultyEl = document.querySelector(`[data-save="${basePrefix}-difficulty"]`);
+    const incrementEl = document.querySelector(`[data-save="${basePrefix}-increment"]`);
+    const currentVal = el.value; const currentNum = parseNumberLike(currentVal); const increment = parseNumberLike(incrementEl ? incrementEl.value : '') ?? 5; let nextVal = currentVal;
+    if (currentNum !== null) { const diff = difficultyEl ? difficultyEl.value : 'medium'; if (diff === 'easy') nextVal = String(currentNum + increment); else if (diff === 'hard') nextVal = String(Math.max(0, currentNum - increment)); else nextVal = String(currentNum); }
+    localStorage.setItem(STORAGE_PREFIX + baseKey, nextVal);
+  });
+  document.querySelectorAll('[data-save]').forEach(el => {
+    const k = el.dataset.save; const fullKey = STORAGE_PREFIX + k; const preserve = k.endsWith('-weight') || k.endsWith('-increment');
+    if (preserve) { if (el.type !== 'checkbox') el.value = localStorage.getItem(fullKey) || ''; return; }
+    if (el.type === 'checkbox') { el.checked = false; localStorage.setItem(fullKey, 'false'); }
+    else if (el.tagName === 'SELECT') { el.value = 'medium'; localStorage.setItem(fullKey, 'medium'); }
+    else { el.value = ''; localStorage.setItem(fullKey, ''); }
+  });
+  meta.history = meta.history || []; meta.history.push(snapshot); meta.currentWeek = (meta.currentWeek || 1) + 1; meta.lastTransition = new Date().toLocaleDateString(); saveMeta(meta); updateMetaUI(); document.getElementById('exportArea').value = formatSnapshot(snapshot);
+}
+function clearChecks(){ document.querySelectorAll('input[type="checkbox"][data-save]').forEach(el => { el.checked = false; localStorage.setItem(STORAGE_PREFIX + el.dataset.save, 'false'); }); }
+function exportCurrent(){ document.getElementById('exportArea').value = formatSnapshot(currentSnapshot()); }
+function exportLastSaved(){ const meta = loadMeta(); const hist = meta.history || []; if (!hist.length) return; document.getElementById('exportArea').value = formatSnapshot(hist[hist.length - 1]); }
+async function copyExport(){ const area = document.getElementById('exportArea'); area.select(); area.setSelectionRange(0, 999999); try { await navigator.clipboard.writeText(area.value); } catch(e) { document.execCommand('copy'); } }
+document.getElementById('transitionBtn').addEventListener('click', transitionWeek);
+document.getElementById('clearChecksBtn').addEventListener('click', clearChecks);
+document.getElementById('exportBtn').addEventListener('click', exportCurrent);
+document.getElementById('exportLastBtn').addEventListener('click', exportLastSaved);
+document.getElementById('copyExportBtn').addEventListener('click', copyExport);
+initFields(); updateMetaUI();
+document.querySelectorAll('input[data-weight-step="true"]').forEach(el => { if (!el.value) { el.value = '5'; localStorage.setItem(STORAGE_PREFIX + el.dataset.save, '5'); }});
+document.querySelectorAll('select[data-save$="-difficulty"]').forEach(el => { if (!localStorage.getItem(STORAGE_PREFIX + el.dataset.save)) { el.value = 'medium'; localStorage.setItem(STORAGE_PREFIX + el.dataset.save, 'medium'); }});
+</script>
+</body>
+</html>
