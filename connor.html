@@ -7,7 +7,7 @@
   <style>
     :root{
       --bg:#0f172a; --panel:#111827; --panel2:#1f2937; --text:#e5e7eb; --muted:#94a3b8;
-      --line:#334155; --lift:#2563eb; --cardio:#16a34a; --core:#eab308; --green:#16a34a;
+      --line:#334155; --lift:#2563eb; --cardio:#16a34a; --core:#eab308; --green:#16a34a; --nutrition:#7c3aed;
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
@@ -18,10 +18,11 @@
     button{border:1px solid #475569;background:#111827;color:var(--text);border-radius:10px;padding:10px 14px;font-size:.95rem;cursor:pointer}
     button.primary{background:var(--green); border-color:var(--green); color:white; font-weight:700}
     button.secondary{background:#0b1220}
+    button.small{padding:8px 10px;font-size:.9rem}
     .legend{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;color:var(--muted);font-size:.85rem;margin-bottom:12px}
     .legend span{display:flex;align-items:center;gap:6px}
     .badge{width:22px;height:22px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#fff;flex:0 0 auto}
-    .lift{background:var(--lift)} .cardio{background:var(--cardio)} .core{background:var(--core);color:#111827}
+    .lift{background:var(--lift)} .cardio{background:var(--cardio)} .core{background:var(--core);color:#111827} .nutrition{background:var(--nutrition)}
     details.section{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin:10px 0;overflow:hidden}
     details.section > summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:700;background:var(--panel2);font-size:1.05rem}
     details.section > summary::-webkit-details-marker{display:none}
@@ -51,8 +52,13 @@
     #exportArea{min-height:180px}
     .history-item{border-top:1px solid var(--line); padding:8px 0; color:var(--muted); font-size:.9rem}
     .history-item:first-child{border-top:none}
-    @media (max-width:800px){.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media (max-width:640px){.grid2,.grid3,.grid4{grid-template-columns:1fr} details.item > summary{align-items:flex-start} .checks{flex-wrap:wrap;justify-content:flex-end}}
+    .adder-row{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:8px;align-items:end}
+    @media (max-width:900px){.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:640px){
+      .grid2,.grid3,.grid4,.adder-row{grid-template-columns:1fr}
+      details.item > summary{align-items:flex-start}
+      .checks{flex-wrap:wrap;justify-content:flex-end}
+    }
   </style>
 </head>
 <body>
@@ -89,9 +95,10 @@
   </details>
 
   <div class="legend">
-    <span><i class="badge cardio">C</i> Cardio / swim</span>
+    <span><i class="badge cardio">C</i> Cardio / bike / run</span>
     <span><i class="badge lift">L</i> Lift</span>
-    <span><i class="badge core">K</i> Core</span>
+    <span><i class="badge core">K</i> Core / swim set</span>
+    <span><i class="badge nutrition">N</i> Nutrition</span>
   </div>
 <details class="section"><summary>Sunday</summary><div class="section-body">
     <details class="item">
@@ -105,23 +112,111 @@
           <div class="field"><label>Average HR</label><input data-save="sun-bike-long-avg-hr" placeholder="135" /></div>
           <div class="field"><label>Avg pace / split summary</label><input data-save="sun-bike-long-pace" placeholder="10:15/mi or split summary" /></div>
         </div>
-        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="sun-bike-long-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="sun-bike-long-notes" placeholder="how it felt, pace changes, etc."></textarea></div>
       </div>
     </details>
-    </div></details>
-<details class="section"><summary>Monday</summary><div class="section-body">
+    
     <details class="item">
-      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Swim 1 Block</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
+      <summary><div class="left"><span class="badge nutrition">N</span><div class="name">Nutrition</div></div><div class="checks"><span class="pill">daily intake</span></div></summary>
+      <div class="content">
+        <div class="meta">Daily totals</div>
+        <div class="grid2">
+          
+        <div class="field">
+          <label>Calories</label>
+          <div class="adder-row">
+            <input data-save="sun-calories-total" placeholder="total" />
+            <input data-save="sun-calories-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('sun-calories')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Protein</label>
+          <div class="adder-row">
+            <input data-save="sun-protein-total" placeholder="total" />
+            <input data-save="sun-protein-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('sun-protein')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Carbs</label>
+          <div class="adder-row">
+            <input data-save="sun-carbs-total" placeholder="total" />
+            <input data-save="sun-carbs-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('sun-carbs')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fat</label>
+          <div class="adder-row">
+            <input data-save="sun-fat-total" placeholder="total" />
+            <input data-save="sun-fat-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('sun-fat')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fiber</label>
+          <div class="adder-row">
+            <input data-save="sun-fiber-total" placeholder="total" />
+            <input data-save="sun-fiber-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('sun-fiber')">+</button>
+          </div>
+        </div>
+        
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="sun-nutrition-notes" placeholder="meals, supplements, anything worth noting..."></textarea></div>
+      </div>
+    </details>
+    </div></details>\n<details class="section"><summary>Monday</summary><div class="section-body">
+    <details class="item">
+      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Swim 1 Block</div></div><div class="checks"><span class="pill">swim block</span></div></summary>
       <div class="content">
         <div class="meta">Target</div>
-        <div class="target">50-100-150-...-500 yd with 30–45 second rest.</div>
-        <div class="grid4">
-          <div class="field"><label>Total distance</label><input data-save="mon-swim1-distance" placeholder="miles or yards" /></div>
-          <div class="field"><label>Total time</label><input data-save="mon-swim1-time" placeholder="45:00" /></div>
-          <div class="field"><label>Average HR</label><input data-save="mon-swim1-avg-hr" placeholder="135" /></div>
-          <div class="field"><label>Avg pace / split summary</label><input data-save="mon-swim1-pace" placeholder="10:15/mi or split summary" /></div>
-        </div>
-        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="mon-swim1-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+        <div class="target">50 / 100 / 150 / ... / 500 yd<br>30–45 second rest between efforts</div>
+        
+        <details class="item">
+          <summary><div class="left"><span class="badge core">K</span><div class="name">50 / 100 / 150 / ... / 500 yd</div></div><div class="checks"><label>Done <input type="checkbox" data-save="mon-swim1-set1-done"></label></div></summary>
+          <div class="content">
+            <div class="meta">Swim set</div>
+            <div class="grid2">
+              <div class="field"><label>Completed / time / split</label><input data-save="mon-swim1-set1-result" placeholder="done, 3:25, split notes..." /></div>
+              <div class="field">
+                <label>Difficulty</label>
+                <select data-save="mon-swim1-set1-difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="mon-swim1-set1-notes" placeholder="rest, stroke, felt off, etc."></textarea></div>
+            </div>
+          </div>
+        </details>
+        
+        <details class="item">
+          <summary><div class="left"><span class="badge core">K</span><div class="name">30–45 second rest between efforts</div></div><div class="checks"><label>Done <input type="checkbox" data-save="mon-swim1-set2-done"></label></div></summary>
+          <div class="content">
+            <div class="meta">Swim set</div>
+            <div class="grid2">
+              <div class="field"><label>Completed / time / split</label><input data-save="mon-swim1-set2-result" placeholder="done, 3:25, split notes..." /></div>
+              <div class="field">
+                <label>Difficulty</label>
+                <select data-save="mon-swim1-set2-difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="mon-swim1-set2-notes" placeholder="rest, stroke, felt off, etc."></textarea></div>
+            </div>
+          </div>
+        </details>
+        
+        <div class="field" style="margin-top:10px"><label>Workout notes</label><textarea data-save="mon-swim1-notes" placeholder="anything beyond the individual set notes..."></textarea></div>
       </div>
     </details>
     
@@ -214,7 +309,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge core">K</span><div class="name">Plank</div></div><div class="checks"><label>1 <input type="checkbox" data-save="mon-plank-s1"></label></div></summary>
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Plank</div></div><div class="checks"><label>Done <input type="checkbox" data-save="mon-plank-donecheck"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">2 minutes</div>
@@ -234,7 +329,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge core">K</span><div class="name">Russian Twists</div></div><div class="checks"><label>1 <input type="checkbox" data-save="mon-russian-s1"></label></div></summary>
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Russian Twists</div></div><div class="checks"><label>Done <input type="checkbox" data-save="mon-russian-donecheck"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">75 each side</div>
@@ -254,7 +349,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge core">K</span><div class="name">Crunches</div></div><div class="checks"><label>1 <input type="checkbox" data-save="mon-crunches-s1"></label></div></summary>
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Crunches</div></div><div class="checks"><label>Done <input type="checkbox" data-save="mon-crunches-donecheck"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">75</div>
@@ -274,7 +369,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge core">K</span><div class="name">6 Inches</div></div><div class="checks"><label>1 <input type="checkbox" data-save="mon-sixinches-s1"></label></div></summary>
+      <summary><div class="left"><span class="badge core">K</span><div class="name">6 Inches</div></div><div class="checks"><label>Done <input type="checkbox" data-save="mon-sixinches-donecheck"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">2 x 1 minute</div>
@@ -292,8 +387,63 @@
         </div>
       </div>
     </details>
-    </div></details>
-<details class="section"><summary>Tuesday</summary><div class="section-body">
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge nutrition">N</span><div class="name">Nutrition</div></div><div class="checks"><span class="pill">daily intake</span></div></summary>
+      <div class="content">
+        <div class="meta">Daily totals</div>
+        <div class="grid2">
+          
+        <div class="field">
+          <label>Calories</label>
+          <div class="adder-row">
+            <input data-save="mon-calories-total" placeholder="total" />
+            <input data-save="mon-calories-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('mon-calories')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Protein</label>
+          <div class="adder-row">
+            <input data-save="mon-protein-total" placeholder="total" />
+            <input data-save="mon-protein-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('mon-protein')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Carbs</label>
+          <div class="adder-row">
+            <input data-save="mon-carbs-total" placeholder="total" />
+            <input data-save="mon-carbs-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('mon-carbs')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fat</label>
+          <div class="adder-row">
+            <input data-save="mon-fat-total" placeholder="total" />
+            <input data-save="mon-fat-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('mon-fat')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fiber</label>
+          <div class="adder-row">
+            <input data-save="mon-fiber-total" placeholder="total" />
+            <input data-save="mon-fiber-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('mon-fiber')">+</button>
+          </div>
+        </div>
+        
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="mon-nutrition-notes" placeholder="meals, supplements, anything worth noting..."></textarea></div>
+      </div>
+    </details>
+    </div></details>\n<details class="section"><summary>Tuesday</summary><div class="section-body">
     <details class="item">
       <summary><div class="left"><span class="badge cardio">C</span><div class="name">Run 1 Base</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
       <div class="content">
@@ -305,7 +455,7 @@
           <div class="field"><label>Average HR</label><input data-save="tue-run-base-avg-hr" placeholder="135" /></div>
           <div class="field"><label>Avg pace / split summary</label><input data-save="tue-run-base-pace" placeholder="10:15/mi or split summary" /></div>
         </div>
-        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="tue-run-base-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="tue-run-base-notes" placeholder="how it felt, pace changes, etc."></textarea></div>
       </div>
     </details>
     
@@ -332,7 +482,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge lift">L</span><div class="name">Calf Raises</div></div><div class="checks"><label>1 <input type="checkbox" data-save="tue-calf-s1"></label><label>2 <input type="checkbox" data-save="tue-calf-s2"></label><label>3 <input type="checkbox" data-save="tue-calf-s3"></label></div></summary>
+      <summary><div class="left"><span class="badge lift">L</span><div class="name">Calf Raises</div></div><div class="checks"><label>1 <input type="checkbox" data-save="tue-calf-s1"></label><label>2 <input type="checkbox" data-save="tue-calf-s2"></label><label>3 <input type="checkbox" data-save="tue-calf-s3"></label><label>4 <input type="checkbox" data-save="tue-calf-s4"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">4 x 12–15</div>
@@ -396,8 +546,63 @@
         </div>
       </div>
     </details>
-    </div></details>
-<details class="section"><summary>Wednesday</summary><div class="section-body">
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge nutrition">N</span><div class="name">Nutrition</div></div><div class="checks"><span class="pill">daily intake</span></div></summary>
+      <div class="content">
+        <div class="meta">Daily totals</div>
+        <div class="grid2">
+          
+        <div class="field">
+          <label>Calories</label>
+          <div class="adder-row">
+            <input data-save="tue-calories-total" placeholder="total" />
+            <input data-save="tue-calories-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('tue-calories')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Protein</label>
+          <div class="adder-row">
+            <input data-save="tue-protein-total" placeholder="total" />
+            <input data-save="tue-protein-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('tue-protein')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Carbs</label>
+          <div class="adder-row">
+            <input data-save="tue-carbs-total" placeholder="total" />
+            <input data-save="tue-carbs-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('tue-carbs')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fat</label>
+          <div class="adder-row">
+            <input data-save="tue-fat-total" placeholder="total" />
+            <input data-save="tue-fat-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('tue-fat')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fiber</label>
+          <div class="adder-row">
+            <input data-save="tue-fiber-total" placeholder="total" />
+            <input data-save="tue-fiber-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('tue-fiber')">+</button>
+          </div>
+        </div>
+        
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="tue-nutrition-notes" placeholder="meals, supplements, anything worth noting..."></textarea></div>
+      </div>
+    </details>
+    </div></details>\n<details class="section"><summary>Wednesday</summary><div class="section-body">
     <details class="item">
       <summary><div class="left"><span class="badge cardio">C</span><div class="name">Bike Short</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
       <div class="content">
@@ -409,22 +614,131 @@
           <div class="field"><label>Average HR</label><input data-save="wed-bike-short-avg-hr" placeholder="135" /></div>
           <div class="field"><label>Avg pace / split summary</label><input data-save="wed-bike-short-pace" placeholder="10:15/mi or split summary" /></div>
         </div>
-        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="wed-bike-short-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="wed-bike-short-notes" placeholder="how it felt, pace changes, etc."></textarea></div>
       </div>
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Swim Mid</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
+      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Swim Mid</div></div><div class="checks"><span class="pill">swim block</span></div></summary>
       <div class="content">
         <div class="meta">Target</div>
-        <div class="target">200 easy, 2 x 25 kickboard, 4 x 75y with 30s rest, 4 x 75y with 20s rest, 100y arm, 100y free.</div>
-        <div class="grid4">
-          <div class="field"><label>Total distance</label><input data-save="wed-swim-mid-distance" placeholder="miles or yards" /></div>
-          <div class="field"><label>Total time</label><input data-save="wed-swim-mid-time" placeholder="45:00" /></div>
-          <div class="field"><label>Average HR</label><input data-save="wed-swim-mid-avg-hr" placeholder="135" /></div>
-          <div class="field"><label>Avg pace / split summary</label><input data-save="wed-swim-mid-pace" placeholder="10:15/mi or split summary" /></div>
-        </div>
-        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="wed-swim-mid-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+        <div class="target">200 Easy<br>2 x 25 Kickboard<br>4 x 75y with 30s rest<br>4 x 75y with 20s rest<br>100y Arm<br>100y Free</div>
+        
+        <details class="item">
+          <summary><div class="left"><span class="badge core">K</span><div class="name">200 Easy</div></div><div class="checks"><label>Done <input type="checkbox" data-save="wed-swim-mid-set1-done"></label></div></summary>
+          <div class="content">
+            <div class="meta">Swim set</div>
+            <div class="grid2">
+              <div class="field"><label>Completed / time / split</label><input data-save="wed-swim-mid-set1-result" placeholder="done, 3:25, split notes..." /></div>
+              <div class="field">
+                <label>Difficulty</label>
+                <select data-save="wed-swim-mid-set1-difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-swim-mid-set1-notes" placeholder="rest, stroke, felt off, etc."></textarea></div>
+            </div>
+          </div>
+        </details>
+        
+        <details class="item">
+          <summary><div class="left"><span class="badge core">K</span><div class="name">2 x 25 Kickboard</div></div><div class="checks"><label>Done <input type="checkbox" data-save="wed-swim-mid-set2-done"></label></div></summary>
+          <div class="content">
+            <div class="meta">Swim set</div>
+            <div class="grid2">
+              <div class="field"><label>Completed / time / split</label><input data-save="wed-swim-mid-set2-result" placeholder="done, 3:25, split notes..." /></div>
+              <div class="field">
+                <label>Difficulty</label>
+                <select data-save="wed-swim-mid-set2-difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-swim-mid-set2-notes" placeholder="rest, stroke, felt off, etc."></textarea></div>
+            </div>
+          </div>
+        </details>
+        
+        <details class="item">
+          <summary><div class="left"><span class="badge core">K</span><div class="name">4 x 75y with 30s rest</div></div><div class="checks"><label>Done <input type="checkbox" data-save="wed-swim-mid-set3-done"></label></div></summary>
+          <div class="content">
+            <div class="meta">Swim set</div>
+            <div class="grid2">
+              <div class="field"><label>Completed / time / split</label><input data-save="wed-swim-mid-set3-result" placeholder="done, 3:25, split notes..." /></div>
+              <div class="field">
+                <label>Difficulty</label>
+                <select data-save="wed-swim-mid-set3-difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-swim-mid-set3-notes" placeholder="rest, stroke, felt off, etc."></textarea></div>
+            </div>
+          </div>
+        </details>
+        
+        <details class="item">
+          <summary><div class="left"><span class="badge core">K</span><div class="name">4 x 75y with 20s rest</div></div><div class="checks"><label>Done <input type="checkbox" data-save="wed-swim-mid-set4-done"></label></div></summary>
+          <div class="content">
+            <div class="meta">Swim set</div>
+            <div class="grid2">
+              <div class="field"><label>Completed / time / split</label><input data-save="wed-swim-mid-set4-result" placeholder="done, 3:25, split notes..." /></div>
+              <div class="field">
+                <label>Difficulty</label>
+                <select data-save="wed-swim-mid-set4-difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-swim-mid-set4-notes" placeholder="rest, stroke, felt off, etc."></textarea></div>
+            </div>
+          </div>
+        </details>
+        
+        <details class="item">
+          <summary><div class="left"><span class="badge core">K</span><div class="name">100y Arm</div></div><div class="checks"><label>Done <input type="checkbox" data-save="wed-swim-mid-set5-done"></label></div></summary>
+          <div class="content">
+            <div class="meta">Swim set</div>
+            <div class="grid2">
+              <div class="field"><label>Completed / time / split</label><input data-save="wed-swim-mid-set5-result" placeholder="done, 3:25, split notes..." /></div>
+              <div class="field">
+                <label>Difficulty</label>
+                <select data-save="wed-swim-mid-set5-difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-swim-mid-set5-notes" placeholder="rest, stroke, felt off, etc."></textarea></div>
+            </div>
+          </div>
+        </details>
+        
+        <details class="item">
+          <summary><div class="left"><span class="badge core">K</span><div class="name">100y Free</div></div><div class="checks"><label>Done <input type="checkbox" data-save="wed-swim-mid-set6-done"></label></div></summary>
+          <div class="content">
+            <div class="meta">Swim set</div>
+            <div class="grid2">
+              <div class="field"><label>Completed / time / split</label><input data-save="wed-swim-mid-set6-result" placeholder="done, 3:25, split notes..." /></div>
+              <div class="field">
+                <label>Difficulty</label>
+                <select data-save="wed-swim-mid-set6-difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="wed-swim-mid-set6-notes" placeholder="rest, stroke, felt off, etc."></textarea></div>
+            </div>
+          </div>
+        </details>
+        
+        <div class="field" style="margin-top:10px"><label>Workout notes</label><textarea data-save="wed-swim-mid-notes" placeholder="anything beyond the individual set notes..."></textarea></div>
       </div>
     </details>
     
@@ -517,7 +831,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge core">K</span><div class="name">Plank</div></div><div class="checks"><label>1 <input type="checkbox" data-save="wed-plank-s1"></label></div></summary>
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Plank</div></div><div class="checks"><label>Done <input type="checkbox" data-save="wed-plank-donecheck"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">2 minutes</div>
@@ -537,7 +851,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge core">K</span><div class="name">Russian Twists</div></div><div class="checks"><label>1 <input type="checkbox" data-save="wed-russian-s1"></label></div></summary>
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Russian Twists</div></div><div class="checks"><label>Done <input type="checkbox" data-save="wed-russian-donecheck"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">75 each side</div>
@@ -557,7 +871,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge core">K</span><div class="name">Crunches</div></div><div class="checks"><label>1 <input type="checkbox" data-save="wed-crunches-s1"></label></div></summary>
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Crunches</div></div><div class="checks"><label>Done <input type="checkbox" data-save="wed-crunches-donecheck"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">75</div>
@@ -577,7 +891,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge core">K</span><div class="name">6 Inches</div></div><div class="checks"><label>1 <input type="checkbox" data-save="wed-sixinches-s1"></label></div></summary>
+      <summary><div class="left"><span class="badge core">K</span><div class="name">6 Inches</div></div><div class="checks"><label>Done <input type="checkbox" data-save="wed-sixinches-donecheck"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">2 x 1 minute</div>
@@ -595,8 +909,63 @@
         </div>
       </div>
     </details>
-    </div></details>
-<details class="section"><summary>Thursday</summary><div class="section-body">
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge nutrition">N</span><div class="name">Nutrition</div></div><div class="checks"><span class="pill">daily intake</span></div></summary>
+      <div class="content">
+        <div class="meta">Daily totals</div>
+        <div class="grid2">
+          
+        <div class="field">
+          <label>Calories</label>
+          <div class="adder-row">
+            <input data-save="wed-calories-total" placeholder="total" />
+            <input data-save="wed-calories-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('wed-calories')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Protein</label>
+          <div class="adder-row">
+            <input data-save="wed-protein-total" placeholder="total" />
+            <input data-save="wed-protein-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('wed-protein')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Carbs</label>
+          <div class="adder-row">
+            <input data-save="wed-carbs-total" placeholder="total" />
+            <input data-save="wed-carbs-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('wed-carbs')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fat</label>
+          <div class="adder-row">
+            <input data-save="wed-fat-total" placeholder="total" />
+            <input data-save="wed-fat-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('wed-fat')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fiber</label>
+          <div class="adder-row">
+            <input data-save="wed-fiber-total" placeholder="total" />
+            <input data-save="wed-fiber-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('wed-fiber')">+</button>
+          </div>
+        </div>
+        
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="wed-nutrition-notes" placeholder="meals, supplements, anything worth noting..."></textarea></div>
+      </div>
+    </details>
+    </div></details>\n<details class="section"><summary>Thursday</summary><div class="section-body">
     <details class="item">
       <summary><div class="left"><span class="badge cardio">C</span><div class="name">Run 2 Long</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
       <div class="content">
@@ -608,23 +977,130 @@
           <div class="field"><label>Average HR</label><input data-save="thu-run-long-avg-hr" placeholder="135" /></div>
           <div class="field"><label>Avg pace / split summary</label><input data-save="thu-run-long-pace" placeholder="10:15/mi or split summary" /></div>
         </div>
-        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="thu-run-long-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="thu-run-long-notes" placeholder="how it felt, pace changes, etc."></textarea></div>
       </div>
     </details>
-    </div></details>
-<details class="section"><summary>Friday</summary><div class="section-body">
+    
     <details class="item">
-      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Swim Distance</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
+      <summary><div class="left"><span class="badge nutrition">N</span><div class="name">Nutrition</div></div><div class="checks"><span class="pill">daily intake</span></div></summary>
+      <div class="content">
+        <div class="meta">Daily totals</div>
+        <div class="grid2">
+          
+        <div class="field">
+          <label>Calories</label>
+          <div class="adder-row">
+            <input data-save="thu-calories-total" placeholder="total" />
+            <input data-save="thu-calories-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('thu-calories')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Protein</label>
+          <div class="adder-row">
+            <input data-save="thu-protein-total" placeholder="total" />
+            <input data-save="thu-protein-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('thu-protein')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Carbs</label>
+          <div class="adder-row">
+            <input data-save="thu-carbs-total" placeholder="total" />
+            <input data-save="thu-carbs-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('thu-carbs')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fat</label>
+          <div class="adder-row">
+            <input data-save="thu-fat-total" placeholder="total" />
+            <input data-save="thu-fat-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('thu-fat')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fiber</label>
+          <div class="adder-row">
+            <input data-save="thu-fiber-total" placeholder="total" />
+            <input data-save="thu-fiber-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('thu-fiber')">+</button>
+          </div>
+        </div>
+        
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="thu-nutrition-notes" placeholder="meals, supplements, anything worth noting..."></textarea></div>
+      </div>
+    </details>
+    </div></details>\n<details class="section"><summary>Friday</summary><div class="section-body">
+    <details class="item">
+      <summary><div class="left"><span class="badge cardio">C</span><div class="name">Swim Distance</div></div><div class="checks"><span class="pill">swim block</span></div></summary>
       <div class="content">
         <div class="meta">Target</div>
-        <div class="target">4 x 200 with 2 minute rest, 800 total.</div>
-        <div class="grid4">
-          <div class="field"><label>Total distance</label><input data-save="fri-swim-distance-distance" placeholder="miles or yards" /></div>
-          <div class="field"><label>Total time</label><input data-save="fri-swim-distance-time" placeholder="45:00" /></div>
-          <div class="field"><label>Average HR</label><input data-save="fri-swim-distance-avg-hr" placeholder="135" /></div>
-          <div class="field"><label>Avg pace / split summary</label><input data-save="fri-swim-distance-pace" placeholder="10:15/mi or split summary" /></div>
-        </div>
-        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="fri-swim-distance-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+        <div class="target">4 x 200<br>2 minute rest<br>800 total</div>
+        
+        <details class="item">
+          <summary><div class="left"><span class="badge core">K</span><div class="name">4 x 200</div></div><div class="checks"><label>Done <input type="checkbox" data-save="fri-swim-distance-set1-done"></label></div></summary>
+          <div class="content">
+            <div class="meta">Swim set</div>
+            <div class="grid2">
+              <div class="field"><label>Completed / time / split</label><input data-save="fri-swim-distance-set1-result" placeholder="done, 3:25, split notes..." /></div>
+              <div class="field">
+                <label>Difficulty</label>
+                <select data-save="fri-swim-distance-set1-difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="fri-swim-distance-set1-notes" placeholder="rest, stroke, felt off, etc."></textarea></div>
+            </div>
+          </div>
+        </details>
+        
+        <details class="item">
+          <summary><div class="left"><span class="badge core">K</span><div class="name">2 minute rest</div></div><div class="checks"><label>Done <input type="checkbox" data-save="fri-swim-distance-set2-done"></label></div></summary>
+          <div class="content">
+            <div class="meta">Swim set</div>
+            <div class="grid2">
+              <div class="field"><label>Completed / time / split</label><input data-save="fri-swim-distance-set2-result" placeholder="done, 3:25, split notes..." /></div>
+              <div class="field">
+                <label>Difficulty</label>
+                <select data-save="fri-swim-distance-set2-difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="fri-swim-distance-set2-notes" placeholder="rest, stroke, felt off, etc."></textarea></div>
+            </div>
+          </div>
+        </details>
+        
+        <details class="item">
+          <summary><div class="left"><span class="badge core">K</span><div class="name">800 total</div></div><div class="checks"><label>Done <input type="checkbox" data-save="fri-swim-distance-set3-done"></label></div></summary>
+          <div class="content">
+            <div class="meta">Swim set</div>
+            <div class="grid2">
+              <div class="field"><label>Completed / time / split</label><input data-save="fri-swim-distance-set3-result" placeholder="done, 3:25, split notes..." /></div>
+              <div class="field">
+                <label>Difficulty</label>
+                <select data-save="fri-swim-distance-set3-difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="fri-swim-distance-set3-notes" placeholder="rest, stroke, felt off, etc."></textarea></div>
+            </div>
+          </div>
+        </details>
+        
+        <div class="field" style="margin-top:10px"><label>Workout notes</label><textarea data-save="fri-swim-distance-notes" placeholder="anything beyond the individual set notes..."></textarea></div>
       </div>
     </details>
     
@@ -739,7 +1215,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge core">K</span><div class="name">Plank</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-plank-s1"></label></div></summary>
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Plank</div></div><div class="checks"><label>Done <input type="checkbox" data-save="fri-plank-donecheck"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">2 minutes</div>
@@ -759,7 +1235,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge core">K</span><div class="name">Russian Twists</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-russian-s1"></label></div></summary>
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Russian Twists</div></div><div class="checks"><label>Done <input type="checkbox" data-save="fri-russian-donecheck"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">75 each side</div>
@@ -779,7 +1255,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge core">K</span><div class="name">Crunches</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-crunches-s1"></label></div></summary>
+      <summary><div class="left"><span class="badge core">K</span><div class="name">Crunches</div></div><div class="checks"><label>Done <input type="checkbox" data-save="fri-crunches-donecheck"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">75</div>
@@ -799,7 +1275,7 @@
     </details>
     
     <details class="item">
-      <summary><div class="left"><span class="badge core">K</span><div class="name">6 Inches</div></div><div class="checks"><label>1 <input type="checkbox" data-save="fri-sixinches-s1"></label></div></summary>
+      <summary><div class="left"><span class="badge core">K</span><div class="name">6 Inches</div></div><div class="checks"><label>Done <input type="checkbox" data-save="fri-sixinches-donecheck"></label></div></summary>
       <div class="content">
         <div class="meta">Target</div>
         <div class="target">2 x 1 minute</div>
@@ -817,8 +1293,63 @@
         </div>
       </div>
     </details>
-    </div></details>
-<details class="section"><summary>Saturday</summary><div class="section-body">
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge nutrition">N</span><div class="name">Nutrition</div></div><div class="checks"><span class="pill">daily intake</span></div></summary>
+      <div class="content">
+        <div class="meta">Daily totals</div>
+        <div class="grid2">
+          
+        <div class="field">
+          <label>Calories</label>
+          <div class="adder-row">
+            <input data-save="fri-calories-total" placeholder="total" />
+            <input data-save="fri-calories-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('fri-calories')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Protein</label>
+          <div class="adder-row">
+            <input data-save="fri-protein-total" placeholder="total" />
+            <input data-save="fri-protein-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('fri-protein')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Carbs</label>
+          <div class="adder-row">
+            <input data-save="fri-carbs-total" placeholder="total" />
+            <input data-save="fri-carbs-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('fri-carbs')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fat</label>
+          <div class="adder-row">
+            <input data-save="fri-fat-total" placeholder="total" />
+            <input data-save="fri-fat-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('fri-fat')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fiber</label>
+          <div class="adder-row">
+            <input data-save="fri-fiber-total" placeholder="total" />
+            <input data-save="fri-fiber-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('fri-fiber')">+</button>
+          </div>
+        </div>
+        
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="fri-nutrition-notes" placeholder="meals, supplements, anything worth noting..."></textarea></div>
+      </div>
+    </details>
+    </div></details>\n<details class="section"><summary>Saturday</summary><div class="section-body">
     <details class="item">
       <summary><div class="left"><span class="badge cardio">C</span><div class="name">Run Flush</div></div><div class="checks"><span class="pill">cardio log</span></div></summary>
       <div class="content">
@@ -830,11 +1361,66 @@
           <div class="field"><label>Average HR</label><input data-save="sat-run-flush-avg-hr" placeholder="135" /></div>
           <div class="field"><label>Avg pace / split summary</label><input data-save="sat-run-flush-pace" placeholder="10:15/mi or split summary" /></div>
         </div>
-        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="sat-run-flush-notes" placeholder="how it felt, lap splits, pace changes, etc."></textarea></div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="sat-run-flush-notes" placeholder="how it felt, pace changes, etc."></textarea></div>
       </div>
     </details>
-    </div></details>
-
+    
+    <details class="item">
+      <summary><div class="left"><span class="badge nutrition">N</span><div class="name">Nutrition</div></div><div class="checks"><span class="pill">daily intake</span></div></summary>
+      <div class="content">
+        <div class="meta">Daily totals</div>
+        <div class="grid2">
+          
+        <div class="field">
+          <label>Calories</label>
+          <div class="adder-row">
+            <input data-save="sat-calories-total" placeholder="total" />
+            <input data-save="sat-calories-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('sat-calories')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Protein</label>
+          <div class="adder-row">
+            <input data-save="sat-protein-total" placeholder="total" />
+            <input data-save="sat-protein-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('sat-protein')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Carbs</label>
+          <div class="adder-row">
+            <input data-save="sat-carbs-total" placeholder="total" />
+            <input data-save="sat-carbs-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('sat-carbs')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fat</label>
+          <div class="adder-row">
+            <input data-save="sat-fat-total" placeholder="total" />
+            <input data-save="sat-fat-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('sat-fat')">+</button>
+          </div>
+        </div>
+        
+        <div class="field">
+          <label>Fiber</label>
+          <div class="adder-row">
+            <input data-save="sat-fiber-total" placeholder="total" />
+            <input data-save="sat-fiber-add" placeholder="add" />
+            <button class="small" type="button" onclick="addToTotal('sat-fiber')">+</button>
+          </div>
+        </div>
+        
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="sat-nutrition-notes" placeholder="meals, supplements, anything worth noting..."></textarea></div>
+      </div>
+    </details>
+    </div></details>\n
 </div>
 <script>
 const STORAGE_PREFIX = 'connortracker:';
@@ -852,30 +1438,36 @@ function initFields(){
 function updateMetaUI(){ const meta = loadMeta(); document.getElementById('currentWeek').textContent = meta.currentWeek || 1; document.getElementById('lastTransition').textContent = meta.lastTransition || 'none'; document.getElementById('savedWeeks').textContent = (meta.history || []).length; renderHistory(); }
 function parseNumberLike(val){ if (!val) return null; const m = String(val).match(/-?\d+(\.\d+)?/); return m ? Number(m[0]) : null; }
 function currentSnapshot(){ const meta = loadMeta(); const snap = { week: meta.currentWeek || 1, savedAt: new Date().toLocaleString(), fields: {} }; document.querySelectorAll('[data-save]').forEach(el => { snap.fields[el.dataset.save] = el.type === 'checkbox' ? el.checked : el.value; }); return snap; }
+function pushIf(lines,label,val){ if (val !== undefined && val !== null && String(val).trim() !== '') lines.push(`${label}: ${val}`); }
 function formatSnapshot(snap){
   const f = snap.fields || {}; const lines = [];
   lines.push(`Week ${snap.week} export`); lines.push(`Saved: ${snap.savedAt || 'current view'}`); lines.push('');
-  const cardioItems = [
-    ['sun-bike-long','Sunday long bike'],['mon-swim1','Monday swim 1'],['tue-run-base','Tuesday base run'],
-    ['wed-bike-short','Wednesday short bike'],['wed-swim-mid','Wednesday swim'],['thu-run-long','Thursday long run'],
-    ['fri-swim-distance','Friday swim distance'],['sat-run-flush','Saturday flush run']
-  ];
+  const cardioItems = [['sun-bike-long','Sunday long bike'],['tue-run-base','Tuesday base run'],['wed-bike-short','Wednesday short bike'],['thu-run-long','Thursday long run'],['sat-run-flush','Saturday flush run']];
+  const swimBlocks = [['mon-swim1','Monday swim 1',2],['wed-swim-mid','Wednesday swim mid',6],['fri-swim-distance','Friday swim distance',3]];
   const liftItems = [
-    ['mon-bench','Monday bench press'],['mon-incline','Monday incline bench'],['mon-pecdeck','Monday pec deck'],['mon-dips','Monday dips'],
-    ['tue-bulgarian','Tuesday Bulgarian split squat'],['tue-calf','Tuesday calf raises'],['tue-legcurl','Tuesday seated leg curl'],['tue-legpress','Tuesday seated leg press'],
-    ['wed-bench','Wednesday bench press'],['wed-incline','Wednesday incline bench'],['wed-pecdeck','Wednesday pec deck'],['wed-dips','Wednesday dips'],
-    ['fri-cablelat','Friday cable lateral raises'],['fri-dblat','Friday dumbbell lateral raises'],['fri-flys','Friday bent-over flyes'],['fri-facepulls','Friday face pulls'],['fri-shoulderpress','Friday shoulder press']
+    ['mon-bench','Monday bench press',3],['mon-incline','Monday incline bench',3],['mon-pecdeck','Monday pec deck',3],['mon-dips','Monday dips',3],
+    ['tue-bulgarian','Tuesday Bulgarian split squat',3],['tue-calf','Tuesday calf raises',4],['tue-legcurl','Tuesday seated leg curl',3],['tue-legpress','Tuesday seated leg press',3],
+    ['wed-bench','Wednesday bench press',3],['wed-incline','Wednesday incline bench',3],['wed-pecdeck','Wednesday pec deck',3],['wed-dips','Wednesday dips',3],
+    ['fri-cablelat','Friday cable lateral raises',3],['fri-dblat','Friday dumbbell lateral raises',3],['fri-flys','Friday bent-over flyes',3],['fri-facepulls','Friday face pulls',3],['fri-shoulderpress','Friday shoulder press',3]
   ];
   const coreItems = [
     ['mon-plank','Monday plank'],['mon-russian','Monday Russian twists'],['mon-crunches','Monday crunches'],['mon-sixinches','Monday 6 inches'],
     ['wed-plank','Wednesday plank'],['wed-russian','Wednesday Russian twists'],['wed-crunches','Wednesday crunches'],['wed-sixinches','Wednesday 6 inches'],
     ['fri-plank','Friday plank'],['fri-russian','Friday Russian twists'],['fri-crunches','Friday crunches'],['fri-sixinches','Friday 6 inches']
   ];
-  function pushIf(label, val){ if (val !== undefined && val !== null && String(val).trim() !== '') lines.push(`${label}: ${val}`); }
-  function cardio(prefix, title){ lines.push(title); pushIf('  Distance', f[`${prefix}-distance`]); pushIf('  Time', f[`${prefix}-time`]); pushIf('  Average HR', f[`${prefix}-avg-hr`]); pushIf('  Pace / splits', f[`${prefix}-pace`]); pushIf('  Notes', f[`${prefix}-notes`]); lines.push(''); }
-  function lift(prefix, title){ const checks = [1,2,3,4].filter(i => f[`${prefix}-s${i}`] === true).length; lines.push(title); pushIf('  Sets checked', checks ? checks : ''); pushIf('  Weight', f[`${prefix}-weight`]); pushIf('  Reps', f[`${prefix}-reps`]); pushIf('  Difficulty', f[`${prefix}-difficulty`]); pushIf('  Notes', f[`${prefix}-notes`]); lines.push(''); }
-  function core(prefix, title){ const checks = [1].filter(i => f[`${prefix}-s${i}`] === true).length; lines.push(title); pushIf('  Completed', f[`${prefix}-done`]); pushIf('  Difficulty', f[`${prefix}-difficulty`]); pushIf('  Notes', f[`${prefix}-notes`]); if (checks) pushIf('  Checked', checks); lines.push(''); }
-  cardioItems.forEach(([p,t])=>cardio(p,t)); liftItems.forEach(([p,t])=>lift(p,t)); coreItems.forEach(([p,t])=>core(p,t));
+  const nutritionDays = ['sun','mon','tue','wed','thu','fri','sat'];
+
+  function cardio(prefix,title){ lines.push(title); pushIf(lines,'  Distance',f[`${prefix}-distance`]); pushIf(lines,'  Time',f[`${prefix}-time`]); pushIf(lines,'  Average HR',f[`${prefix}-avg-hr`]); pushIf(lines,'  Pace / splits',f[`${prefix}-pace`]); pushIf(lines,'  Notes',f[`${prefix}-notes`]); lines.push(''); }
+  function swim(prefix,title,count){ lines.push(title); for(let i=1;i<=count;i++){ pushIf(lines,`  Set ${i} done`, f[`${prefix}-set${i}-done`] === true ? 'yes' : ''); pushIf(lines,`  Set ${i} result`, f[`${prefix}-set${i}-result`]); pushIf(lines,`  Set ${i} difficulty`, f[`${prefix}-set${i}-difficulty`]); pushIf(lines,`  Set ${i} notes`, f[`${prefix}-set${i}-notes`]); } pushIf(lines,'  Workout notes', f[`${prefix}-notes`]); lines.push(''); }
+  function lift(prefix,title,count){ const checks = Array.from({length:count}, (_,i)=>i+1).filter(i => f[`${prefix}-s${i}`] === true).length; lines.push(title); pushIf(lines,'  Sets checked', checks ? checks : ''); pushIf(lines,'  Weight', f[`${prefix}-weight`]); pushIf(lines,'  Reps', f[`${prefix}-reps`]); pushIf(lines,'  Difficulty', f[`${prefix}-difficulty`]); pushIf(lines,'  Notes', f[`${prefix}-notes`]); lines.push(''); }
+  function core(prefix,title){ pushIf(lines,title, ''); lines.push(title); pushIf(lines,'  Checked', f[`${prefix}-donecheck`] === true ? 'yes' : ''); pushIf(lines,'  Completed', f[`${prefix}-done`]); pushIf(lines,'  Difficulty', f[`${prefix}-difficulty`]); pushIf(lines,'  Notes', f[`${prefix}-notes`]); lines.push(''); }
+  function nutrition(day,title){ lines.push(title); ['calories','protein','carbs','fat','fiber'].forEach(k => pushIf(lines,`  ${k[0].toUpperCase()+k.slice(1)}`, f[`${day}-${k}-total`])); pushIf(lines,'  Notes', f[`${day}-nutrition-notes`]); lines.push(''); }
+
+  cardioItems.forEach(([p,t])=>cardio(p,t));
+  swimBlocks.forEach(([p,t,c])=>swim(p,t,c));
+  liftItems.forEach(([p,t,c])=>lift(p,t,c));
+  coreItems.forEach(([p,t])=>core(p,t));
+  nutritionDays.forEach(day => nutrition(day, `${day[0].toUpperCase()+day.slice(1)} nutrition`));
   return lines.join('\n').replace(/\n{3,}/g, '\n\n');
 }
 function renderHistory(){
@@ -908,6 +1500,18 @@ function clearChecks(){ document.querySelectorAll('input[type="checkbox"][data-s
 function exportCurrent(){ document.getElementById('exportArea').value = formatSnapshot(currentSnapshot()); }
 function exportLastSaved(){ const meta = loadMeta(); const hist = meta.history || []; if (!hist.length) return; document.getElementById('exportArea').value = formatSnapshot(hist[hist.length - 1]); }
 async function copyExport(){ const area = document.getElementById('exportArea'); area.select(); area.setSelectionRange(0, 999999); try { await navigator.clipboard.writeText(area.value); } catch(e) { document.execCommand('copy'); } }
+function addToTotal(base){
+  const totalEl = document.querySelector(`[data-save="${base}-total"]`);
+  const addEl = document.querySelector(`[data-save="${base}-add"]`);
+  if (!totalEl || !addEl) return;
+  const total = parseNumberLike(totalEl.value) ?? 0;
+  const add = parseNumberLike(addEl.value) ?? 0;
+  totalEl.value = String(total + add);
+  addEl.value = '';
+  saveField(totalEl);
+  saveField(addEl);
+}
+window.addToTotal = addToTotal;
 document.getElementById('transitionBtn').addEventListener('click', transitionWeek);
 document.getElementById('clearChecksBtn').addEventListener('click', clearChecks);
 document.getElementById('exportBtn').addEventListener('click', exportCurrent);
