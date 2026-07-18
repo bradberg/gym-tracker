@@ -1,0 +1,1813 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>John PT Tracker</title>
+  <style>
+    :root{
+      --bg:#0b1120;
+      --bg2:#111827;
+      --panel:#111827;
+      --panel2:#172033;
+      --panel3:#0f172a;
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --line:#334155;
+      --accent:#22c55e;
+      --accent-2:#38bdf8;
+      --accent-soft:rgba(34,197,94,.14);
+      --warning:#f59e0b;
+      --flash:#f8fafc;
+      --danger:#ef4444;
+      --shadow:0 20px 40px rgba(2,6,23,.38);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.14), transparent 34%),
+        radial-gradient(circle at top right, rgba(34,197,94,.12), transparent 30%),
+        linear-gradient(180deg, #08101f 0%, #0b1120 100%);
+    }
+    .wrap{max-width:1320px;margin:0 auto;padding:18px 16px 48px}
+    .timer-card,.summary-card,.section{
+      border:1px solid rgba(148,163,184,.18);
+      border-radius:20px;
+      background:linear-gradient(180deg, rgba(17,24,39,.95), rgba(11,17,32,.96));
+      box-shadow:var(--shadow);
+    }
+    .page-head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:16px;
+      margin:4px 0 16px;
+    }
+    h1{
+      margin:0;
+      font-size:2rem;
+      line-height:1.05;
+    }
+    .page-date{
+      color:var(--muted);
+      font-size:1rem;
+      font-weight:800;
+      line-height:1.2;
+    }
+    .timer-card{
+      position:sticky;
+      top:10px;
+      z-index:10;
+      display:grid;
+      grid-template-columns:minmax(0,.95fr) auto minmax(310px,.85fr);
+      gap:16px;
+      align-items:center;
+      padding:16px 18px;
+      margin-bottom:16px;
+      backdrop-filter:blur(16px);
+    }
+    .timer-copy{
+      min-width:0;
+    }
+    .timer-title{
+      margin:0 0 4px;
+      font-size:1.12rem;
+      font-weight:800;
+    }
+    .timer-hint{
+      margin:0;
+      color:var(--muted);
+      line-height:1.45;
+      font-size:.94rem;
+    }
+    .timer-status{
+      margin:8px 0 0;
+      color:#dbeafe;
+      line-height:1.4;
+      font-size:.95rem;
+      font-weight:700;
+    }
+    .timer-display{
+      justify-self:center;
+      min-width:150px;
+      text-align:center;
+      font-size:3rem;
+      line-height:1;
+      font-variant-numeric:tabular-nums;
+      font-weight:800;
+      letter-spacing:.04em;
+      padding:14px 18px;
+      border-radius:18px;
+      border:1px solid rgba(34,197,94,.35);
+      color:#dcfce7;
+      background:linear-gradient(180deg, rgba(34,197,94,.18), rgba(34,197,94,.06));
+      transition:background .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
+    }
+    .timer-display.running{
+      box-shadow:0 0 0 4px rgba(34,197,94,.12);
+    }
+    .timer-display.mode-prep{
+      border-color:rgba(245,158,11,.5);
+      color:#fef3c7;
+      background:linear-gradient(180deg, rgba(245,158,11,.24), rgba(146,64,14,.2));
+    }
+    .timer-display.mode-hold{
+      border-color:rgba(56,189,248,.45);
+      color:#e0f2fe;
+      background:linear-gradient(180deg, rgba(56,189,248,.2), rgba(14,116,144,.18));
+    }
+    .timer-display.mode-rest{
+      border-color:rgba(34,197,94,.45);
+      color:#dcfce7;
+      background:linear-gradient(180deg, rgba(34,197,94,.22), rgba(20,83,45,.2));
+    }
+    .timer-display.mode-ready{
+      border-color:rgba(34,197,94,.55);
+      color:#f0fdf4;
+      background:linear-gradient(180deg, rgba(34,197,94,.34), rgba(20,83,45,.28));
+    }
+    .timer-controls{
+      display:grid;
+      grid-template-columns:minmax(110px,150px) repeat(2,auto);
+      gap:10px;
+      align-items:end;
+      justify-content:end;
+    }
+    .summary-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+      margin-bottom:16px;
+    }
+    .summary-card{
+      padding:18px;
+    }
+    .summary-label{
+      color:var(--muted);
+      font-size:.82rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:700;
+    }
+    .summary-value{
+      margin-top:6px;
+      font-size:1.85rem;
+      line-height:1;
+      font-weight:800;
+    }
+    .section{
+      padding:18px;
+      margin-bottom:16px;
+    }
+    .section.hidden{
+      display:none;
+    }
+    .section-head{
+      display:flex;
+      gap:16px;
+      align-items:flex-end;
+      justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .section-title{
+      margin:0;
+      font-size:1.35rem;
+      line-height:1.2;
+    }
+    .action-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    button{
+      border:1px solid #475569;
+      background:#111827;
+      color:var(--text);
+      border-radius:12px;
+      padding:11px 14px;
+      font-size:.95rem;
+      cursor:pointer;
+      font-weight:700;
+    }
+    button:hover{border-color:#64748b}
+    button.primary{
+      background:var(--accent);
+      border-color:var(--accent);
+      color:white;
+    }
+    button.secondary{
+      background:#0b1220;
+    }
+    button:disabled{
+      opacity:.65;
+      cursor:not-allowed;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:5px;
+      min-width:0;
+    }
+    .field label{
+      color:var(--muted);
+      font-size:.82rem;
+      font-weight:700;
+    }
+    input{
+      width:100%;
+      border:1px solid #475569;
+      background:#111827;
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 11px;
+      font-size:1rem;
+    }
+    textarea{
+      width:100%;
+      border:1px solid #475569;
+      background:#111827;
+      color:var(--text);
+      border-radius:12px;
+      padding:12px;
+      font-size:.96rem;
+      min-height:240px;
+      resize:vertical;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,monospace;
+    }
+    input:focus,
+    textarea:focus{
+      outline:none;
+      border-color:var(--accent-2);
+      box-shadow:0 0 0 3px rgba(56,189,248,.12);
+    }
+    .exercise-list{
+      display:grid;
+      gap:14px;
+    }
+    details.exercise-card{
+      border:1px solid rgba(148,163,184,.18);
+      border-radius:18px;
+      overflow:hidden;
+      background:linear-gradient(180deg, rgba(15,23,42,.94), rgba(9,14,27,.95));
+    }
+    details.exercise-card > summary{
+      list-style:none;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:16px 18px;
+      background:linear-gradient(180deg, rgba(23,32,51,.98), rgba(15,23,42,.96));
+    }
+    details.exercise-card > summary::-webkit-details-marker{display:none}
+    .summary-left{
+      display:flex;
+      align-items:flex-start;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+    .badge{
+      flex:0 0 auto;
+      min-width:48px;
+      height:48px;
+      border-radius:16px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:800;
+      font-size:.85rem;
+      letter-spacing:.04em;
+      color:white;
+      background:linear-gradient(180deg, #2563eb, #1d4ed8);
+    }
+    .badge.tens{
+      background:linear-gradient(180deg, #f97316, #ea580c);
+    }
+    .exercise-name{
+      font-size:1.06rem;
+      line-height:1.25;
+      font-weight:800;
+    }
+    .exercise-meta{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:.92rem;
+      line-height:1.45;
+    }
+    .summary-pill{
+      flex:0 0 auto;
+      border:1px solid rgba(34,197,94,.25);
+      background:rgba(34,197,94,.1);
+      color:#bbf7d0;
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:.82rem;
+      font-weight:800;
+      white-space:nowrap;
+    }
+    .card-body{
+      padding:18px;
+      border-top:1px solid rgba(148,163,184,.16);
+    }
+    .session-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+    }
+    .session-card{
+      border:1px solid rgba(148,163,184,.18);
+      border-radius:16px;
+      background:linear-gradient(180deg, rgba(17,24,39,.95), rgba(12,18,33,.95));
+      padding:14px;
+      transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
+    }
+    .session-card.complete{
+      border-color:rgba(34,197,94,.4);
+      box-shadow:inset 0 0 0 1px rgba(34,197,94,.18);
+      background:linear-gradient(180deg, rgba(21,44,33,.88), rgba(12,29,24,.92));
+    }
+    .session-card.in-progress{
+      border-color:rgba(245,158,11,.36);
+      box-shadow:inset 0 0 0 1px rgba(245,158,11,.16);
+      background:linear-gradient(180deg, rgba(59,36,6,.92), rgba(29,20,9,.96));
+    }
+    .session-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .session-status{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      font-weight:800;
+      font-size:1rem;
+    }
+    .session-status input{
+      width:20px;
+      height:20px;
+      margin:0;
+      accent-color:var(--accent);
+      border-radius:6px;
+    }
+    .session-label{
+      font-size:1rem;
+      font-weight:800;
+    }
+    .session-count{
+      color:var(--muted);
+      font-size:.86rem;
+      font-weight:700;
+      text-align:right;
+    }
+    .set-stack{
+      display:grid;
+      gap:12px;
+    }
+    .set-block{
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,.12);
+      background:rgba(15,23,42,.68);
+    }
+    .set-title{
+      margin-bottom:10px;
+      color:var(--muted);
+      font-size:.84rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+    .rep-grid{
+      display:grid;
+      grid-template-columns:repeat(10,minmax(0,1fr));
+      gap:8px;
+    }
+    .rep-box{
+      position:relative;
+      display:block;
+      cursor:pointer;
+    }
+    .rep-box input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+    .rep-box span{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:42px;
+      border-radius:12px;
+      border:1px solid #475569;
+      background:#10192d;
+      color:#cbd5e1;
+      font-size:.92rem;
+      font-weight:800;
+      transition:transform .15s ease, border-color .15s ease, background .15s ease, color .15s ease;
+      user-select:none;
+      text-align:center;
+      padding:0 6px;
+    }
+    .rep-box input:checked + span{
+      border-color:rgba(34,197,94,.6);
+      background:linear-gradient(180deg, rgba(34,197,94,.26), rgba(22,101,52,.3));
+      color:#dcfce7;
+    }
+    .rep-box:hover span{
+      transform:translateY(-1px);
+      border-color:#64748b;
+    }
+    .rep-box.in-progress span{
+      border-color:rgba(245,158,11,.7);
+      background:linear-gradient(180deg, rgba(245,158,11,.28), rgba(146,64,14,.24));
+      color:#fef3c7;
+      box-shadow:0 0 0 3px rgba(245,158,11,.12);
+    }
+    .state-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .state-chip{
+      position:relative;
+      display:block;
+      cursor:pointer;
+    }
+    .state-chip input{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+    .state-chip span{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:40px;
+      padding:0 14px;
+      border-radius:12px;
+      border:1px solid #475569;
+      background:#10192d;
+      color:#cbd5e1;
+      font-size:.9rem;
+      font-weight:800;
+      transition:transform .15s ease, border-color .15s ease, background .15s ease, color .15s ease;
+      user-select:none;
+    }
+    .state-chip input:checked + span{
+      border-color:rgba(34,197,94,.6);
+      background:linear-gradient(180deg, rgba(34,197,94,.26), rgba(22,101,52,.3));
+      color:#dcfce7;
+    }
+    .state-chip:hover span{
+      transform:translateY(-1px);
+      border-color:#64748b;
+    }
+    .tens-copy{
+      display:grid;
+      gap:10px;
+    }
+    .hint-row{
+      margin-top:2px;
+      color:var(--muted);
+      font-size:.85rem;
+      line-height:1.45;
+    }
+    .timer-flash{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:0;
+      background:rgba(255,255,255,.98);
+      z-index:50;
+    }
+    .timer-flash.active{
+      animation:flashPulse .75s ease-out forwards;
+    }
+    .ready-overlay{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+      opacity:0;
+      background:rgba(34,197,94,.2);
+      backdrop-filter:blur(3px);
+      transition:opacity .18s ease;
+      z-index:40;
+    }
+    .ready-overlay.active{
+      opacity:1;
+    }
+    .ready-card{
+      border:1px solid rgba(34,197,94,.4);
+      border-radius:24px;
+      background:rgba(11,17,32,.88);
+      color:#f0fdf4;
+      padding:22px 28px;
+      text-align:center;
+      box-shadow:var(--shadow);
+    }
+    .ready-card strong{
+      display:block;
+      font-size:1.5rem;
+      line-height:1.1;
+      margin-bottom:6px;
+    }
+    .ready-card span{
+      color:#dcfce7;
+      font-size:1rem;
+      font-weight:700;
+    }
+    .motivation-modal[hidden]{
+      display:none;
+    }
+    .motivation-modal{
+      position:fixed;
+      inset:0;
+      z-index:60;
+      display:grid;
+      place-items:center;
+      padding:18px;
+    }
+    .motivation-backdrop{
+      position:absolute;
+      inset:0;
+      background:rgba(2,6,23,.78);
+      backdrop-filter:blur(4px);
+    }
+    .motivation-card{
+      position:relative;
+      width:min(760px,100%);
+      border:1px solid rgba(148,163,184,.2);
+      border-radius:22px;
+      background:linear-gradient(180deg, rgba(17,24,39,.98), rgba(10,15,28,.98));
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .motivation-copy{
+      padding:18px 18px 10px;
+    }
+    .motivation-copy h2{
+      margin:0 0 6px;
+      font-size:1.45rem;
+      line-height:1.1;
+    }
+    .motivation-copy p{
+      margin:0;
+      color:var(--muted);
+      font-size:.96rem;
+      line-height:1.5;
+      font-weight:700;
+    }
+    .motivation-image{
+      display:block;
+      width:100%;
+      max-height:420px;
+      object-fit:cover;
+      background:#020617;
+    }
+    .motivation-actions{
+      padding:14px 18px 18px;
+      display:flex;
+      justify-content:flex-end;
+    }
+    @keyframes flashPulse{
+      0%{opacity:0}
+      12%{opacity:.95}
+      100%{opacity:0}
+    }
+    @media (max-width:1120px){
+      .timer-card{grid-template-columns:1fr;justify-items:stretch}
+      .timer-display{justify-self:start}
+      .timer-controls{justify-content:start}
+      .session-grid{grid-template-columns:1fr}
+      .summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (max-width:720px){
+      .wrap{padding:14px 12px 40px}
+      h1{font-size:1.8rem}
+      .timer-display{font-size:2.3rem;min-width:130px}
+      .timer-controls,
+      .action-row,
+      .summary-grid{grid-template-columns:1fr;display:grid}
+      .page-head{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .section-head,
+      details.exercise-card > summary,
+      .session-head{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+      .summary-pill{white-space:normal}
+      .rep-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+      .state-row{width:100%}
+      .state-chip{flex:1 1 0}
+      .state-chip span{width:100%}
+      .ready-card{
+        width:100%;
+        padding:18px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="page-head">
+      <h1>John PT Tracker</h1>
+      <div class="page-date" id="todayDate">Loading...</div>
+    </header>
+
+    <section class="timer-card">
+      <div class="timer-copy">
+        <h2 class="timer-title" id="timerTitle">Timer</h2>
+        <p class="timer-hint" id="timerHint">Press <strong>space</strong> anywhere on the page to start the manual timer.</p>
+        <p class="timer-status" id="timerStatus">Manual timer ready.</p>
+      </div>
+
+      <div class="timer-display mode-manual" id="timerDisplay">00:20</div>
+
+      <div class="timer-controls">
+        <div class="field">
+          <label for="timerSeconds">Manual length (seconds)</label>
+          <input id="timerSeconds" type="number" min="1" step="1" value="20" />
+        </div>
+        <button class="primary" id="startTimerBtn" type="button">Start</button>
+        <button class="secondary" id="resetTimerBtn" type="button">Reset</button>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      <article class="summary-card">
+        <div class="summary-label">Session 1</div>
+        <div class="summary-value" id="session1Summary">0 / 0</div>
+      </article>
+      <article class="summary-card">
+        <div class="summary-label">Session 2</div>
+        <div class="summary-value" id="session2Summary">0 / 0</div>
+      </article>
+      <article class="summary-card">
+        <div class="summary-label">Today Total</div>
+        <div class="summary-value" id="totalSummary">0 / 0</div>
+      </article>
+    </section>
+
+    <section class="section hidden" id="exportSection">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">Export History</h2>
+        </div>
+        <div class="action-row">
+          <button id="copyExportBtn" type="button">Copy Export</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="exportArea">Saved days</label>
+        <textarea id="exportArea" placeholder="Press Export History to build a sheet-friendly log."></textarea>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">PT Exercises</h2>
+        </div>
+        <div class="action-row">
+          <button id="exportHistoryBtn" type="button">Export History</button>
+          <button id="expandAllBtn" type="button">Expand All</button>
+          <button id="collapseAllBtn" type="button">Collapse All</button>
+          <button class="secondary" id="clearTodayBtn" type="button">Clear Today</button>
+        </div>
+      </div>
+      <div class="exercise-list" id="exerciseList"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">TENS Machine</h2>
+        </div>
+      </div>
+      <div class="exercise-list" id="tensList"></div>
+    </section>
+  </div>
+
+  <div class="timer-flash" id="timerFlash" aria-hidden="true"></div>
+
+  <div class="ready-overlay" id="readyOverlay" aria-hidden="true">
+    <div class="ready-card">
+      <strong>Rest finished</strong>
+      <span>Move when you are ready for the next one.</span>
+    </div>
+  </div>
+
+  <div class="motivation-modal" id="motivationModal" hidden aria-hidden="true">
+    <div class="motivation-backdrop" data-close-motivation="true"></div>
+    <div class="motivation-card" role="dialog" aria-modal="true" aria-labelledby="motivationTitle">
+      <div class="motivation-copy">
+        <h2 id="motivationTitle">Keep going</h2>
+        <p id="motivationCaption">Small wins stack up.</p>
+      </div>
+      <img class="motivation-image" id="motivationImage" alt="Motivational gif" />
+      <div class="motivation-actions">
+        <button id="closeMotivationBtn" type="button">Back to PT</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const APP_PREFIX = 'john-pt:';
+    const TIMER_SETTING_KEY = APP_PREFIX + 'timer-seconds';
+    const PAGE_DAY_KEY = todayKey();
+    const MANUAL_TIMER_DEFAULT = 20;
+    const STRETCH_PREP_SECONDS = 5;
+    const AUTO_REST_SECONDS = 120;
+    const READY_OVERLAY_MIN_MS = 400;
+    const MOTIVATION_CHANCE = 0.32;
+    const MOTIVATION_MIN_COMPLETIONS = 2;
+    const MOTIVATION_COOLDOWN_MS = 5 * 60 * 1000;
+
+    const MOTIVATION_GIFS = [
+      {
+        title: 'You are rolling now.',
+        url: 'https://media.giphy.com/media/aOR8X8t4F8eR2SPwbW/giphy.gif'
+      },
+      {
+        title: 'That is real progress.',
+        url: 'https://media.giphy.com/media/PkGCiXSrcH5RQkUhzi/giphy.gif'
+      },
+      {
+        title: 'Keep stacking wins.',
+        url: 'https://media.giphy.com/media/du9Gu89sHoKeomCI5L/giphy.gif'
+      },
+      {
+        title: 'One more step forward.',
+        url: 'https://media.giphy.com/media/JBFHdCAR5cjkwLt6dd/giphy.gif'
+      },
+      {
+        title: 'That one counts too.',
+        url: 'https://media.giphy.com/media/2Fo2xIq2TPILI4TKQw/giphy.gif'
+      }
+    ];
+
+    const PT_EXERCISES = [
+      {
+        id: 'upper-calf-stretch',
+        name: 'Upper Calf Stretch',
+        meta: '1 set x 5 reps • 20 seconds per stretch • twice a day',
+        tracking: 'grid',
+        stretch: true,
+        sets: 1,
+        reps: 5,
+        prepSeconds: STRETCH_PREP_SECONDS,
+        holdSeconds: 20
+      },
+      {
+        id: 'lower-calf-stretch',
+        name: 'Lower Calf Stretch',
+        meta: '1 set x 5 reps • 20 seconds per stretch • twice a day',
+        tracking: 'grid',
+        stretch: true,
+        sets: 1,
+        reps: 5,
+        prepSeconds: STRETCH_PREP_SECONDS,
+        holdSeconds: 20
+      },
+      {
+        id: 'ankle-twist',
+        name: 'Ankle Twist In and Out',
+        meta: '1 set x 20 reps • twice a day',
+        tracking: 'session',
+        sets: 1,
+        target: '1 set x 20 reps'
+      },
+      {
+        id: 'ankle-pump',
+        name: 'Ankle Pump (Up and Down)',
+        meta: '2 sets x 20 reps • twice a day',
+        tracking: 'session',
+        sets: 2,
+        target: '2 sets x 20 reps'
+      },
+      {
+        id: 'ankle-circles',
+        name: 'Ankle Circles',
+        meta: '1 set x 20 reps • twice a day',
+        tracking: 'session',
+        sets: 1,
+        target: '1 set x 20 reps'
+      }
+    ];
+
+    const TENS_EXERCISES = [
+      {
+        id: 'tens-near-toes',
+        name: 'Near Toes',
+        placement: 'Near toes',
+        mode: 'Suction cup mode',
+        defaultMinutes: 30
+      },
+      {
+        id: 'tens-ankle-bone',
+        name: 'Above and Below Ankle Bone',
+        placement: 'Above and below ankle bone',
+        mode: 'Suction cup mode',
+        defaultMinutes: 30
+      },
+      {
+        id: 'tens-incision-point',
+        name: 'On Incision Point',
+        placement: 'On incision point',
+        mode: 'Hand pounding mode',
+        defaultMinutes: 30
+      },
+      {
+        id: 'tens-top-incision-holes',
+        name: 'Above Top Incision Holes',
+        placement: 'Above top incision holes',
+        mode: 'Suction cup mode',
+        defaultMinutes: 30
+      }
+    ];
+
+    function todayKey(){
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatToday(){
+      return new Date().toLocaleDateString(undefined, {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    function storageKey(field){
+      return `${APP_PREFIX}${PAGE_DAY_KEY}:${field}`;
+    }
+
+    function storageKeyForDay(dayKey, field){
+      return `${APP_PREFIX}${dayKey}:${field}`;
+    }
+
+    function checkForDateRollover(){
+      if (todayKey() !== PAGE_DAY_KEY) window.location.reload();
+    }
+
+    function listSavedDays(){
+      const daySet = new Set();
+      for (let index = 0; index < localStorage.length; index += 1){
+        const key = localStorage.key(index);
+        if (!key) continue;
+        if (!key.startsWith(APP_PREFIX)) continue;
+        if (key === TIMER_SETTING_KEY) continue;
+        const match = key.match(/^john-pt:(\d{4}-\d{2}-\d{2}):/);
+        if (match) daySet.add(match[1]);
+      }
+      return Array.from(daySet).sort();
+    }
+
+    function renderPtExercise(exercise){
+      return `
+        <details class="exercise-card" open data-exercise-id="${exercise.id}">
+          <summary>
+            <div class="summary-left">
+              <span class="badge">PT</span>
+              <div>
+                <div class="exercise-name">${exercise.name}</div>
+                <div class="exercise-meta">${exercise.meta}</div>
+              </div>
+            </div>
+            <div class="summary-pill" data-exercise-progress="${exercise.id}">0 / 2 sessions complete</div>
+          </summary>
+          <div class="card-body">
+            <div class="session-grid">
+              ${exercise.stretch ? renderStretchSession(exercise, 1) : renderSimplePtSession(exercise, 1)}
+              ${exercise.stretch ? renderStretchSession(exercise, 2) : renderSimplePtSession(exercise, 2)}
+            </div>
+          </div>
+        </details>
+      `;
+    }
+
+    function renderStretchSession(exercise, sessionNumber){
+      const sessionKey = `${exercise.id}-session${sessionNumber}`;
+      let repsHtml = '';
+
+      for (let repIndex = 1; repIndex <= exercise.reps; repIndex += 1){
+        const fieldKey = `${sessionKey}-set1-rep${repIndex}`;
+        repsHtml += `
+          <label class="rep-box" data-stretch-control="true">
+            <input
+              type="checkbox"
+              data-save="${fieldKey}"
+              data-auto-session="${sessionKey}"
+              data-session-number="${sessionNumber}"
+              data-stretch-rep="true"
+              data-exercise-name="${exercise.name}"
+              data-rep-label="${repIndex}/${exercise.reps}"
+              data-prep-seconds="${exercise.prepSeconds}"
+              data-hold-seconds="${exercise.holdSeconds}"
+            />
+            <span>${repIndex}/${exercise.reps}</span>
+          </label>
+        `;
+      }
+
+      return `
+        <section class="session-card" data-session-card="${sessionKey}">
+          <div class="session-head">
+            <label class="session-status">
+              <input
+                type="checkbox"
+                data-auto-session-status="${sessionKey}"
+                data-clear-session="${sessionKey}"
+                data-summary-track="true"
+                data-session-number="${sessionNumber}"
+              />
+              <span>Session ${sessionNumber}</span>
+            </label>
+            <div class="session-count" data-session-count="${sessionKey}">0 / 0 reps done</div>
+          </div>
+          <div class="set-stack">
+            <div class="set-block">
+              <div class="set-title">Reps</div>
+              <div class="rep-grid">${repsHtml}</div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderSimplePtSession(exercise, sessionNumber){
+      const sessionKey = `${exercise.id}-session${sessionNumber}`;
+      let setChecksHtml = '';
+
+      for (let setIndex = 1; setIndex <= exercise.sets; setIndex += 1){
+        const fieldKey = `${sessionKey}-set${setIndex}`;
+        setChecksHtml += `
+          <label class="rep-box">
+            <input
+              type="checkbox"
+              data-save="${fieldKey}"
+              data-auto-session="${sessionKey}"
+              data-session-number="${sessionNumber}"
+              data-pt-set="true"
+              data-pt-label="${exercise.name} set ${setIndex}"
+            />
+            <span>${setIndex}</span>
+          </label>
+        `;
+      }
+
+      return `
+        <section class="session-card" data-session-card="${sessionKey}">
+          <div class="session-head">
+            <label class="session-status">
+              <input
+                type="checkbox"
+                data-auto-session-status="${sessionKey}"
+                data-clear-session="${sessionKey}"
+                data-summary-track="true"
+                data-session-number="${sessionNumber}"
+              />
+              <span>Session ${sessionNumber}</span>
+            </label>
+            <div
+              class="session-count"
+              data-session-count="${sessionKey}"
+              data-session-unit="sets"
+            >0 / 0 sets done</div>
+          </div>
+          <div class="set-stack">
+            <div class="set-block">
+              <div class="set-title">Sets</div>
+              <div class="rep-grid">${setChecksHtml}</div>
+            </div>
+          </div>
+          <div class="hint-row">${exercise.target}</div>
+        </section>
+      `;
+    }
+
+    function renderTensExercise(exercise){
+      return `
+        <details class="exercise-card" open data-exercise-id="${exercise.id}">
+          <summary>
+            <div class="summary-left">
+              <span class="badge tens">TENS</span>
+              <div>
+                <div class="exercise-name">${exercise.name}</div>
+                <div class="exercise-meta">${exercise.placement} • ${exercise.mode} • twice a day</div>
+              </div>
+            </div>
+            <div class="summary-pill" data-exercise-progress="${exercise.id}">0 / 2 sessions complete</div>
+          </summary>
+          <div class="card-body">
+            <div class="session-grid">
+              ${renderTensSession(exercise, 1)}
+              ${renderTensSession(exercise, 2)}
+            </div>
+          </div>
+        </details>
+      `;
+    }
+
+    function renderTensSession(exercise, sessionNumber){
+      const sessionKey = `${exercise.id}-session${sessionNumber}`;
+      return `
+        <section class="session-card" data-session-card="${sessionKey}">
+          <div class="session-head">
+            <div class="session-label">Session ${sessionNumber}</div>
+            <div class="session-count" data-manual-count="${sessionKey}">Ready to start</div>
+          </div>
+          <div class="state-row">
+            <label class="state-chip">
+              <input
+                type="checkbox"
+                data-save="${sessionKey}-started"
+                data-tens-start="${sessionKey}"
+              />
+              <span>Started</span>
+            </label>
+            <label class="state-chip">
+              <input
+                type="checkbox"
+                data-save="${sessionKey}-done"
+                data-tens-finish="${sessionKey}"
+                data-summary-track="true"
+                data-session-number="${sessionNumber}"
+              />
+              <span>Finished</span>
+            </label>
+          </div>
+          <div class="tens-copy">
+            <div class="field">
+              <label>Time (mins)</label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                data-save="${sessionKey}-minutes"
+                data-default="${exercise.defaultMinutes}"
+              />
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderPage(){
+      document.getElementById('exerciseList').innerHTML = PT_EXERCISES.map(renderPtExercise).join('');
+      document.getElementById('tensList').innerHTML = TENS_EXERCISES.map(renderTensExercise).join('');
+    }
+
+    function saveField(el){
+      const key = storageKey(el.dataset.save);
+      if (el.type === 'checkbox'){
+        if (el.checked) localStorage.setItem(key, 'true');
+        else localStorage.removeItem(key);
+        return;
+      }
+
+      const value = el.value.trim();
+      if (value === ''){
+        localStorage.removeItem(key);
+        return;
+      }
+
+      if (el.dataset.default !== undefined && value === String(el.dataset.default)){
+        localStorage.removeItem(key);
+        return;
+      }
+
+      localStorage.setItem(key, value);
+    }
+
+    function readDayField(dayKey, field){
+      return localStorage.getItem(storageKeyForDay(dayKey, field));
+    }
+
+    function daySessionStatus(dayKey, sessionNumber){
+      let done = 0;
+      let total = 0;
+
+      PT_EXERCISES.forEach(exercise => {
+        if (exercise.tracking === 'grid'){
+          const sessionKey = `${exercise.id}-session${sessionNumber}`;
+          let sessionDone = 0;
+          let sessionTotal = 0;
+          for (let setIndex = 1; setIndex <= exercise.sets; setIndex += 1){
+            for (let repIndex = 1; repIndex <= exercise.reps; repIndex += 1){
+              sessionTotal += 1;
+              if (readDayField(dayKey, `${sessionKey}-set${setIndex}-rep${repIndex}`) === 'true') sessionDone += 1;
+            }
+          }
+          total += 1;
+          if (sessionTotal > 0 && sessionDone === sessionTotal) done += 1;
+          return;
+        }
+
+        const sessionKey = `${exercise.id}-session${sessionNumber}`;
+        let sessionDone = 0;
+        let sessionTotal = 0;
+        for (let setIndex = 1; setIndex <= exercise.sets; setIndex += 1){
+          sessionTotal += 1;
+          if (readDayField(dayKey, `${sessionKey}-set${setIndex}`) === 'true') sessionDone += 1;
+        }
+        total += 1;
+        if (sessionTotal > 0 && sessionDone === sessionTotal) done += 1;
+      });
+
+      TENS_EXERCISES.forEach(exercise => {
+        total += 1;
+        if (readDayField(dayKey, `${exercise.id}-session${sessionNumber}-done`) === 'true') done += 1;
+      });
+
+      return `${done}/${total}`;
+    }
+
+    function exportValueForPtExercise(dayKey, exercise, sessionNumber){
+      const sessionKey = `${exercise.id}-session${sessionNumber}`;
+      if (exercise.tracking === 'grid'){
+        let done = 0;
+        let total = 0;
+        for (let setIndex = 1; setIndex <= exercise.sets; setIndex += 1){
+          for (let repIndex = 1; repIndex <= exercise.reps; repIndex += 1){
+            total += 1;
+            if (readDayField(dayKey, `${sessionKey}-set${setIndex}-rep${repIndex}`) === 'true') done += 1;
+          }
+        }
+        return `${done}/${total}`;
+      }
+
+      let done = 0;
+      const total = exercise.sets;
+      for (let setIndex = 1; setIndex <= exercise.sets; setIndex += 1){
+        if (readDayField(dayKey, `${sessionKey}-set${setIndex}`) === 'true') done += 1;
+      }
+      return `${done}/${total}`;
+    }
+
+    function exportMinutesForTensExercise(dayKey, exercise, sessionNumber){
+      const savedMinutes = readDayField(dayKey, `${exercise.id}-session${sessionNumber}-minutes`);
+      if (savedMinutes !== null && savedMinutes !== '') return savedMinutes;
+      if (readDayField(dayKey, `${exercise.id}-session${sessionNumber}-done`) === 'true'){
+        return String(exercise.defaultMinutes);
+      }
+      return '';
+    }
+
+    function exportHistoryText(){
+      const days = listSavedDays();
+      if (!days.length) return '';
+
+      const headers = ['date', 'session_1_complete', 'session_2_complete', 'today_total'];
+      PT_EXERCISES.forEach(exercise => {
+        headers.push(`${exercise.id}_session1`);
+        headers.push(`${exercise.id}_session2`);
+      });
+      TENS_EXERCISES.forEach(exercise => {
+        headers.push(`${exercise.id}_session1_started`);
+        headers.push(`${exercise.id}_session1_done`);
+        headers.push(`${exercise.id}_session1_mins`);
+        headers.push(`${exercise.id}_session2_started`);
+        headers.push(`${exercise.id}_session2_done`);
+        headers.push(`${exercise.id}_session2_mins`);
+      });
+
+      const rows = [headers.join('\t')];
+      days.forEach(dayKey => {
+        const sessionOne = daySessionStatus(dayKey, 1);
+        const sessionTwo = daySessionStatus(dayKey, 2);
+        const row = [dayKey, sessionOne, sessionTwo];
+
+        const sessionSummary1 = sessionOne.split('/').map(Number);
+        const sessionSummary2 = sessionTwo.split('/').map(Number);
+        row.push(`${sessionSummary1[0] + sessionSummary2[0]}/${sessionSummary1[1] + sessionSummary2[1]}`);
+
+        PT_EXERCISES.forEach(exercise => {
+          row.push(exportValueForPtExercise(dayKey, exercise, 1));
+          row.push(exportValueForPtExercise(dayKey, exercise, 2));
+        });
+
+        TENS_EXERCISES.forEach(exercise => {
+          row.push(readDayField(dayKey, `${exercise.id}-session1-started`) === 'true' ? 'yes' : 'no');
+          row.push(readDayField(dayKey, `${exercise.id}-session1-done`) === 'true' ? 'yes' : 'no');
+          row.push(exportMinutesForTensExercise(dayKey, exercise, 1));
+          row.push(readDayField(dayKey, `${exercise.id}-session2-started`) === 'true' ? 'yes' : 'no');
+          row.push(readDayField(dayKey, `${exercise.id}-session2-done`) === 'true' ? 'yes' : 'no');
+          row.push(exportMinutesForTensExercise(dayKey, exercise, 2));
+        });
+
+        rows.push(row.join('\t'));
+      });
+
+      return rows.join('\n');
+    }
+
+    function exportHistory(){
+      const exportArea = document.getElementById('exportArea');
+      const exportSection = document.getElementById('exportSection');
+      exportArea.value = exportHistoryText();
+      exportSection.classList.remove('hidden');
+      exportSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      exportArea.focus();
+      exportArea.select();
+    }
+
+    async function copyExport(){
+      const exportArea = document.getElementById('exportArea');
+      if (!exportArea.value) exportHistory();
+      exportArea.select();
+      exportArea.setSelectionRange(0, 999999);
+      try {
+        await navigator.clipboard.writeText(exportArea.value);
+      } catch (error) {
+        document.execCommand('copy');
+      }
+    }
+
+    const timerTitleEl = document.getElementById('timerTitle');
+    const timerHintEl = document.getElementById('timerHint');
+    const timerStatusEl = document.getElementById('timerStatus');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const timerSecondsInput = document.getElementById('timerSeconds');
+    const timerFlash = document.getElementById('timerFlash');
+    const startTimerBtn = document.getElementById('startTimerBtn');
+    const resetTimerBtn = document.getElementById('resetTimerBtn');
+    const readyOverlay = document.getElementById('readyOverlay');
+    const motivationModal = document.getElementById('motivationModal');
+    const motivationImage = document.getElementById('motivationImage');
+    const motivationCaption = document.getElementById('motivationCaption');
+
+    let timerRemaining = MANUAL_TIMER_DEFAULT;
+    let timerRunning = false;
+    let timerInterval = null;
+    let timerEndsAt = null;
+    let timerMode = 'manual';
+    let timerStatusText = 'Manual timer ready.';
+    let timerCompletion = null;
+    let activeStretch = null;
+    let readyOverlayShownAt = 0;
+    let motivationCompletionCount = 0;
+    let lastMotivationAt = 0;
+
+    function timerDuration(){
+      const value = Number.parseInt(timerSecondsInput.value, 10);
+      if (!Number.isFinite(value) || value <= 0) return MANUAL_TIMER_DEFAULT;
+      return value;
+    }
+
+    function applyTimerSetting(){
+      localStorage.setItem(TIMER_SETTING_KEY, String(timerDuration()));
+      if (!timerRunning && timerMode === 'manual'){
+        timerRemaining = timerDuration();
+        timerStatusText = 'Manual timer ready.';
+        updateTimerDisplay();
+      }
+    }
+
+    function updateTimerDisplay(){
+      const modeViews = {
+        manual: {
+          title: 'Timer',
+          hint: 'Press space anywhere on the page to start the manual timer.'
+        },
+        prep: {
+          title: 'Stretch Prep',
+          hint: 'Five seconds to get into position.'
+        },
+        hold: {
+          title: 'Stretch Hold',
+          hint: 'Stay on the stretch until it completes.'
+        },
+        rest: {
+          title: 'Rest Timer',
+          hint: 'Two minutes before the next move.'
+        },
+        ready: {
+          title: 'Ready',
+          hint: 'Move the mouse when you are ready to keep going.'
+        }
+      };
+
+      const view = modeViews[timerMode] || modeViews.manual;
+      timerTitleEl.textContent = view.title;
+      timerHintEl.innerHTML = view.hint;
+      timerStatusEl.textContent = timerStatusText;
+      timerDisplay.textContent = timerMode === 'ready' ? 'GO' : formatTimer(timerRemaining);
+      timerDisplay.className = `timer-display mode-${timerMode}${timerRunning ? ' running' : ''}`;
+      startTimerBtn.disabled = timerRunning;
+      resetTimerBtn.textContent = timerRunning || timerMode !== 'manual' ? 'Cancel' : 'Reset';
+    }
+
+    function clearTimerInterval(){
+      if (timerInterval){
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      timerRunning = false;
+      timerEndsAt = null;
+      timerCompletion = null;
+    }
+
+    function flashTimer(){
+      timerFlash.classList.remove('active');
+      void timerFlash.offsetWidth;
+      timerFlash.classList.add('active');
+    }
+
+    function hideReadyOverlay(){
+      readyOverlay.classList.remove('active');
+      readyOverlayShownAt = 0;
+    }
+
+    function showReadyOverlay(){
+      readyOverlayShownAt = Date.now();
+      readyOverlay.classList.add('active');
+      timerMode = 'ready';
+      timerRemaining = 0;
+      timerStatusText = 'Rest finished. Move when you are ready for the next one.';
+      updateTimerDisplay();
+    }
+
+    function clearReadyOverlay(){
+      if (!readyOverlayShownAt) return;
+      hideReadyOverlay();
+      if (!timerRunning){
+        resetManualTimer();
+      }
+    }
+
+    function resetManualTimer(){
+      clearTimerInterval();
+      timerMode = 'manual';
+      timerRemaining = timerDuration();
+      timerStatusText = 'Manual timer ready.';
+      updateTimerDisplay();
+    }
+
+    function cancelActiveStretch(resetTimer = true){
+      if (!activeStretch) {
+        if (resetTimer && (timerMode === 'prep' || timerMode === 'hold')) resetManualTimer();
+        return;
+      }
+
+      activeStretch.label.classList.remove('in-progress');
+      activeStretch.input.checked = false;
+      saveField(activeStretch.input);
+      activeStretch = null;
+      refreshProgress();
+
+      if (resetTimer && (timerMode === 'prep' || timerMode === 'hold')) resetManualTimer();
+    }
+
+    function startCountdown(seconds, mode, statusText, onFinish){
+      hideReadyOverlay();
+      clearTimerInterval();
+      timerMode = mode;
+      timerRemaining = seconds;
+      timerStatusText = statusText;
+      timerCompletion = typeof onFinish === 'function' ? onFinish : null;
+      timerEndsAt = Date.now() + (seconds * 1000);
+      timerRunning = true;
+      updateTimerDisplay();
+      tickTimer();
+      timerInterval = setInterval(tickTimer, 200);
+    }
+
+    function finishTimer(){
+      const finishedMode = timerMode;
+      const completion = timerCompletion;
+      clearTimerInterval();
+
+      if (completion){
+        completion();
+        return;
+      }
+
+      if (finishedMode === 'manual'){
+        flashTimer();
+      }
+
+      resetManualTimer();
+    }
+
+    function tickTimer(){
+      const nextValue = Math.max(0, Math.ceil((timerEndsAt - Date.now()) / 1000));
+      timerRemaining = nextValue;
+      updateTimerDisplay();
+
+      if (nextValue <= 0) finishTimer();
+    }
+
+    function startManualTimer(){
+      if (timerRunning) return;
+      clearReadyOverlay();
+      startCountdown(timerDuration(), 'manual', 'Manual timer running.', null);
+    }
+
+    function startRestTimer(sourceLabel){
+      startCountdown(
+        AUTO_REST_SECONDS,
+        'rest',
+        `Rest after ${sourceLabel}.`,
+        () => {
+          showReadyOverlay();
+        }
+      );
+    }
+
+    function completeStretchRep(input){
+      if (activeStretch && activeStretch.input === input){
+        activeStretch.label.classList.remove('in-progress');
+      }
+      input.checked = true;
+      saveField(input);
+      activeStretch = null;
+      refreshProgress();
+      handlePtCompletion(input.dataset.repLabel ? `${input.dataset.exerciseName} ${input.dataset.repLabel}` : input.dataset.exerciseName);
+    }
+
+    function startStretchFlow(input){
+      if (activeStretch && activeStretch.input !== input){
+        cancelActiveStretch(false);
+      }
+
+      const label = input.closest('.rep-box');
+      activeStretch = {
+        input,
+        label,
+        sessionKey: input.dataset.autoSession,
+        exerciseName: input.dataset.exerciseName,
+        repLabel: input.dataset.repLabel,
+        prepSeconds: Number.parseInt(input.dataset.prepSeconds, 10) || STRETCH_PREP_SECONDS,
+        holdSeconds: Number.parseInt(input.dataset.holdSeconds, 10) || 20
+      };
+
+      label.classList.add('in-progress');
+      input.checked = false;
+      saveField(input);
+      refreshProgress();
+
+      startCountdown(
+        activeStretch.prepSeconds,
+        'prep',
+        `${activeStretch.exerciseName} ${activeStretch.repLabel} starts in ${activeStretch.prepSeconds} seconds.`,
+        () => {
+          if (!activeStretch || activeStretch.input !== input) return;
+          startCountdown(
+            activeStretch.holdSeconds,
+            'hold',
+            `Hold ${activeStretch.exerciseName} ${activeStretch.repLabel} for ${activeStretch.holdSeconds} seconds.`,
+            () => {
+              completeStretchRep(input);
+            }
+          );
+        }
+      );
+    }
+
+    function handleStretchControlClick(label){
+      const input = label.querySelector('input[data-stretch-rep="true"]');
+      if (!input) return;
+
+      if (label.classList.contains('in-progress')){
+        cancelActiveStretch();
+        return;
+      }
+
+      if (input.checked){
+        input.checked = false;
+        saveField(input);
+        refreshProgress();
+        return;
+      }
+
+      startStretchFlow(input);
+    }
+
+    function pickRandomMotivationGif(){
+      return MOTIVATION_GIFS[Math.floor(Math.random() * MOTIVATION_GIFS.length)];
+    }
+
+    function motivationModalOpen(){
+      return !motivationModal.hidden;
+    }
+
+    function showMotivationModal(sourceLabel){
+      const gif = pickRandomMotivationGif();
+      motivationImage.src = gif.url;
+      motivationCaption.textContent = sourceLabel ? `${gif.title} After ${sourceLabel.toLowerCase()}.` : gif.title;
+      motivationModal.hidden = false;
+      motivationModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeMotivationModal(){
+      motivationModal.hidden = true;
+      motivationModal.setAttribute('aria-hidden', 'true');
+      motivationImage.removeAttribute('src');
+    }
+
+    function maybeShowMotivation(sourceLabel){
+      motivationCompletionCount += 1;
+      if (motivationModalOpen()) return;
+      if (motivationCompletionCount < MOTIVATION_MIN_COMPLETIONS) return;
+      if ((Date.now() - lastMotivationAt) < MOTIVATION_COOLDOWN_MS) return;
+      if (Math.random() > MOTIVATION_CHANCE) return;
+
+      lastMotivationAt = Date.now();
+      motivationCompletionCount = 0;
+      showMotivationModal(sourceLabel);
+    }
+
+    function handlePtCompletion(sourceLabel){
+      startRestTimer(sourceLabel);
+      maybeShowMotivation(sourceLabel);
+    }
+
+    function handleTensStartChange(startBox){
+      const sessionKey = startBox.dataset.tensStart;
+      const doneBox = document.querySelector(`input[data-tens-finish="${sessionKey}"]`);
+      saveField(startBox);
+      if (!startBox.checked && doneBox && doneBox.checked){
+        doneBox.checked = false;
+        saveField(doneBox);
+      }
+      refreshProgress();
+    }
+
+    function handleTensFinishChange(doneBox){
+      const sessionKey = doneBox.dataset.tensFinish;
+      const startBox = document.querySelector(`input[data-tens-start="${sessionKey}"]`);
+      if (doneBox.checked && startBox && !startBox.checked){
+        startBox.checked = true;
+        saveField(startBox);
+      }
+      saveField(doneBox);
+      refreshProgress();
+    }
+
+    function initFields(){
+      document.querySelectorAll('[data-save]').forEach(el => {
+        const key = storageKey(el.dataset.save);
+        const saved = localStorage.getItem(key);
+
+        if (el.type === 'checkbox'){
+          el.checked = saved === 'true';
+
+          if (el.dataset.stretchRep === 'true') return;
+
+          el.addEventListener('change', () => {
+            if (el.dataset.tensStart){
+              handleTensStartChange(el);
+              return;
+            }
+
+            if (el.dataset.tensFinish){
+              handleTensFinishChange(el);
+              return;
+            }
+
+            saveField(el);
+            refreshProgress();
+
+            if (el.dataset.ptSet === 'true' && el.checked){
+              handlePtCompletion(el.dataset.ptLabel || 'PT set');
+            }
+          });
+          return;
+        }
+
+        if (saved !== null) el.value = saved;
+        else if (el.dataset.default !== undefined) {
+          el.value = el.dataset.default;
+        }
+
+        const save = () => saveField(el);
+        el.addEventListener('input', save);
+        el.addEventListener('change', save);
+      });
+    }
+
+    function updateAutoSession(sessionKey){
+      const repBoxes = Array.from(document.querySelectorAll(`input[data-auto-session="${sessionKey}"]`));
+      const done = repBoxes.filter(box => box.checked).length;
+      const total = repBoxes.length;
+      const statusBox = document.querySelector(`[data-auto-session-status="${sessionKey}"]`);
+      const countEl = document.querySelector(`[data-session-count="${sessionKey}"]`);
+      const cardEl = document.querySelector(`[data-session-card="${sessionKey}"]`);
+
+      if (!statusBox || !countEl || !cardEl) return;
+
+      const unit = countEl.dataset.sessionUnit || 'reps';
+      statusBox.checked = total > 0 && done === total;
+      countEl.textContent = `${done} / ${total} ${unit} done`;
+      cardEl.classList.toggle('complete', statusBox.checked);
+      if (!statusBox.checked) cardEl.classList.remove('in-progress');
+    }
+
+    function updateManualSession(sessionKey){
+      const startedBox = document.querySelector(`input[data-tens-start="${sessionKey}"]`);
+      const doneBox = document.querySelector(`input[data-tens-finish="${sessionKey}"]`);
+      const countEl = document.querySelector(`[data-manual-count="${sessionKey}"]`);
+      const cardEl = document.querySelector(`[data-session-card="${sessionKey}"]`);
+
+      if (!startedBox || !doneBox || !countEl || !cardEl) return;
+
+      if (doneBox.checked){
+        countEl.textContent = 'Complete';
+      } else if (startedBox.checked){
+        countEl.textContent = 'In progress';
+      } else {
+        countEl.textContent = 'Ready to start';
+      }
+
+      cardEl.classList.toggle('complete', doneBox.checked);
+      cardEl.classList.toggle('in-progress', startedBox.checked && !doneBox.checked);
+    }
+
+    function clearAutoSession(sessionKey){
+      if (activeStretch && activeStretch.sessionKey === sessionKey){
+        cancelActiveStretch();
+      }
+
+      document.querySelectorAll(`input[data-auto-session="${sessionKey}"]`).forEach(box => {
+        box.checked = false;
+        box.closest('.rep-box')?.classList.remove('in-progress');
+        saveField(box);
+      });
+    }
+
+    function updateExerciseProgress(exerciseId){
+      const card = document.querySelector(`[data-exercise-id="${exerciseId}"]`);
+      const pill = document.querySelector(`[data-exercise-progress="${exerciseId}"]`);
+      if (!card || !pill) return;
+
+      const statuses = Array.from(card.querySelectorAll('[data-summary-track="true"]'));
+      const done = statuses.filter(el => el.checked).length;
+      pill.textContent = `${done} / ${statuses.length} sessions complete`;
+    }
+
+    function refreshProgress(){
+      PT_EXERCISES.forEach(exercise => {
+        updateAutoSession(`${exercise.id}-session1`);
+        updateAutoSession(`${exercise.id}-session2`);
+        updateExerciseProgress(exercise.id);
+      });
+
+      TENS_EXERCISES.forEach(exercise => {
+        updateManualSession(`${exercise.id}-session1`);
+        updateManualSession(`${exercise.id}-session2`);
+        updateExerciseProgress(exercise.id);
+      });
+
+      [1, 2].forEach(sessionNumber => {
+        const nodes = Array.from(document.querySelectorAll(`[data-summary-track="true"][data-session-number="${sessionNumber}"]`));
+        const done = nodes.filter(node => node.checked).length;
+        document.getElementById(`session${sessionNumber}Summary`).textContent = `${done} / ${nodes.length}`;
+      });
+
+      const all = Array.from(document.querySelectorAll('[data-summary-track="true"]'));
+      const doneAll = all.filter(node => node.checked).length;
+      document.getElementById('totalSummary').textContent = `${doneAll} / ${all.length}`;
+    }
+
+    function resetField(el){
+      if (el.type === 'checkbox'){
+        el.checked = false;
+        el.closest('.rep-box')?.classList.remove('in-progress');
+      } else if (el.dataset.default !== undefined){
+        el.value = el.dataset.default;
+      } else {
+        el.value = '';
+      }
+      saveField(el);
+    }
+
+    function clearToday(){
+      const confirmed = window.confirm('Clear today\'s PT tracker and start over for this date?');
+      if (!confirmed) return;
+
+      cancelActiveStretch(false);
+      closeMotivationModal();
+      hideReadyOverlay();
+      resetManualTimer();
+      document.querySelectorAll('[data-save]').forEach(resetField);
+      refreshProgress();
+    }
+
+    function expandAll(){
+      document.querySelectorAll('details.exercise-card').forEach(card => { card.open = true; });
+    }
+
+    function collapseAll(){
+      document.querySelectorAll('details.exercise-card').forEach(card => { card.open = false; });
+    }
+
+    function formatTimer(seconds){
+      const minutes = Math.floor(seconds / 60);
+      const remainder = seconds % 60;
+      return `${String(minutes).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`;
+    }
+
+    function dismissReadyOverlayOnMovement(){
+      if (!readyOverlayShownAt) return;
+      if ((Date.now() - readyOverlayShownAt) < READY_OVERLAY_MIN_MS) return;
+      clearReadyOverlay();
+    }
+
+    function initTimer(){
+      const saved = localStorage.getItem(TIMER_SETTING_KEY);
+      if (saved !== null) timerSecondsInput.value = saved;
+      timerRemaining = timerDuration();
+      timerMode = 'manual';
+      timerRunning = false;
+      timerStatusText = 'Manual timer ready.';
+      updateTimerDisplay();
+
+      timerSecondsInput.addEventListener('input', applyTimerSetting);
+      timerSecondsInput.addEventListener('change', applyTimerSetting);
+      startTimerBtn.addEventListener('click', startManualTimer);
+      resetTimerBtn.addEventListener('click', () => {
+        cancelActiveStretch(false);
+        hideReadyOverlay();
+        resetManualTimer();
+      });
+      timerFlash.addEventListener('animationend', () => timerFlash.classList.remove('active'));
+
+      document.addEventListener('keydown', event => {
+        if (event.code === 'Escape' && motivationModalOpen()){
+          closeMotivationModal();
+          return;
+        }
+
+        if (event.code !== 'Space') return;
+        if (motivationModalOpen()) return;
+        event.preventDefault();
+        clearReadyOverlay();
+        if (!timerRunning) startManualTimer();
+      });
+
+      document.addEventListener('mousemove', dismissReadyOverlayOnMovement, { passive: true });
+      document.addEventListener('touchstart', dismissReadyOverlayOnMovement, { passive: true });
+    }
+
+    function initActions(){
+      document.getElementById('exportHistoryBtn').addEventListener('click', exportHistory);
+      document.getElementById('copyExportBtn').addEventListener('click', copyExport);
+      document.getElementById('expandAllBtn').addEventListener('click', expandAll);
+      document.getElementById('collapseAllBtn').addEventListener('click', collapseAll);
+      document.getElementById('clearTodayBtn').addEventListener('click', clearToday);
+      document.querySelectorAll('input[data-clear-session]').forEach(el => {
+        el.addEventListener('click', event => {
+          event.preventDefault();
+          clearAutoSession(el.dataset.clearSession);
+          refreshProgress();
+        });
+      });
+      document.querySelectorAll('[data-stretch-control="true"]').forEach(label => {
+        label.addEventListener('click', event => {
+          event.preventDefault();
+          handleStretchControlClick(label);
+        });
+      });
+      document.querySelectorAll('[data-close-motivation="true"]').forEach(el => {
+        el.addEventListener('click', closeMotivationModal);
+      });
+      document.getElementById('closeMotivationBtn').addEventListener('click', closeMotivationModal);
+      window.addEventListener('focus', checkForDateRollover);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) checkForDateRollover();
+      });
+      window.setInterval(checkForDateRollover, 60000);
+    }
+
+    renderPage();
+    initFields();
+    initTimer();
+    initActions();
+    refreshProgress();
+    document.getElementById('todayDate').textContent = formatToday();
+  </script>
+</body>
+</html>
