@@ -494,6 +494,9 @@
     .timer-flash.active{
       animation:flashPulse .75s ease-out forwards;
     }
+    .timer-flash.stretch-end.active{
+      animation:stretchEndFlash 1.15s ease-out forwards;
+    }
     .ready-overlay{
       position:fixed;
       inset:0;
@@ -586,6 +589,12 @@
     @keyframes flashPulse{
       0%{opacity:0}
       12%{opacity:.95}
+      100%{opacity:0}
+    }
+    @keyframes stretchEndFlash{
+      0%{opacity:0}
+      8%{opacity:1}
+      55%{opacity:1}
       100%{opacity:0}
     }
     @media (max-width:1120px){
@@ -734,34 +743,55 @@
     const PAGE_DAY_KEY = todayKey();
     const MANUAL_TIMER_DEFAULT = 20;
     const STRETCH_PREP_SECONDS = 5;
-    const AUTO_REST_SECONDS = 120;
+    const AUTO_REST_SECONDS = 90;
     const READY_OVERLAY_MIN_MS = 400;
+    const STRETCH_END_FLASH_MS = 1150;
     const MOTIVATION_CHANCE = 0.32;
     const MOTIVATION_MIN_COMPLETIONS = 2;
     const MOTIVATION_COOLDOWN_MS = 5 * 60 * 1000;
 
     const MOTIVATION_GIFS = [
       {
-        title: 'You are rolling now.',
-        url: 'https://media.giphy.com/media/aOR8X8t4F8eR2SPwbW/giphy.gif'
+        title: 'In here with me',
+        url: 'https://tenor.com/view/watchmen-gif-8794746'
       },
       {
-        title: 'That is real progress.',
-        url: 'https://media.giphy.com/media/PkGCiXSrcH5RQkUhzi/giphy.gif'
+        title: 'Bring it',
+        url: 'https://tenor.com/view/the-matrix-neo-keanu-reeves-come-at-me-gif-24036184'
       },
       {
-        title: 'Keep stacking wins.',
-        url: 'https://media.giphy.com/media/du9Gu89sHoKeomCI5L/giphy.gif'
+        title: 'I`m here',
+        url: 'https://tenor.com/view/thor-groot-rocket-raccoon-avengers-infinity-war-gif-20388032'
       },
       {
-        title: 'One more step forward.',
-        url: 'https://media.giphy.com/media/JBFHdCAR5cjkwLt6dd/giphy.gif'
+        title: 'fuck it, never give up',
+        url: 'https://tenor.com/view/jonsnow-gif-9657129'
       },
       {
-        title: 'That one counts too.',
-        url: 'https://media.giphy.com/media/2Fo2xIq2TPILI4TKQw/giphy.gif'
+        title: 'Worthy',
+        url: 'https://tenor.com/view/captain-america-hammer-avengers-endgame-ready-gif-24420983'
+      },
+      {
+        title: 'Redemption',
+        url: 'https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExeTd2eGs5a3h2YXlvNHEzdGdnZGtpNDZub21xN2FjMW42NXp3dTVxYyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/AWJy0ZcCJmILe/giphy.gif'
+      },
+      {
+        title: 'You Ain`t so bad',
+        url: 'https://i.makeagif.com/media/11-01-2015/xmwObI.gif'
+      },
+      {
+        title: 'Big Balls',
+        url: 'https://braze-images.com/appboy/communication/assets/image_assets/images/681b0a6862ed020064e24974/original.gif?1746602599'
+      },
+      {
+        title: 'Braveheart',
+        url: 'https://tenor.com/view/braveheart-mel-gibson-scotland-gibson-scottish-gif-21954284'
+      },
+      {
+        title: 'Believe',
+        url: 'https://tenor.com/view/ted-lasso-believe-gif-18590055'
       }
-    ];
+];
 
     const PT_EXERCISES = [
       {
@@ -1268,6 +1298,7 @@
     let timerCompletion = null;
     let activeStretch = null;
     let readyOverlayShownAt = 0;
+    let pendingStretchCompletionTimeout = null;
     let motivationCompletionCount = 0;
     let lastMotivationAt = 0;
 
@@ -1302,7 +1333,7 @@
         },
         rest: {
           title: 'Rest Timer',
-          hint: 'Two minutes before the next move.'
+          hint: 'Ninety seconds before the next move.'
         },
         ready: {
           title: 'Ready',
@@ -1330,9 +1361,16 @@
       timerCompletion = null;
     }
 
-    function flashTimer(){
-      timerFlash.classList.remove('active');
+    function clearPendingStretchCompletion(){
+      if (!pendingStretchCompletionTimeout) return;
+      window.clearTimeout(pendingStretchCompletionTimeout);
+      pendingStretchCompletionTimeout = null;
+    }
+
+    function flashTimer(kind = 'manual'){
+      timerFlash.classList.remove('active', 'stretch-end');
       void timerFlash.offsetWidth;
+      if (kind === 'stretch') timerFlash.classList.add('stretch-end');
       timerFlash.classList.add('active');
     }
 
@@ -1359,6 +1397,7 @@
     }
 
     function resetManualTimer(){
+      clearPendingStretchCompletion();
       clearTimerInterval();
       timerMode = 'manual';
       timerRemaining = timerDuration();
@@ -1445,7 +1484,14 @@
       saveField(input);
       activeStretch = null;
       refreshProgress();
-      handlePtCompletion(input.dataset.repLabel ? `${input.dataset.exerciseName} ${input.dataset.repLabel}` : input.dataset.exerciseName);
+      flashTimer('stretch');
+
+      const completionLabel = input.dataset.repLabel ? `${input.dataset.exerciseName} ${input.dataset.repLabel}` : input.dataset.exerciseName;
+      clearPendingStretchCompletion();
+      pendingStretchCompletionTimeout = window.setTimeout(() => {
+        pendingStretchCompletionTimeout = null;
+        handlePtCompletion(completionLabel);
+      }, STRETCH_END_FLASH_MS);
     }
 
     function startStretchFlow(input){
@@ -1753,7 +1799,7 @@
         hideReadyOverlay();
         resetManualTimer();
       });
-      timerFlash.addEventListener('animationend', () => timerFlash.classList.remove('active'));
+      timerFlash.addEventListener('animationend', () => timerFlash.classList.remove('active', 'stretch-end'));
 
       document.addEventListener('keydown', event => {
         if (event.code === 'Escape' && motivationModalOpen()){
