@@ -3,6 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b1120" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="John PT" />
   <title>John PT Tracker</title>
   <style>
     :root{
@@ -78,14 +83,8 @@
       font-size:1.12rem;
       font-weight:800;
     }
-    .timer-hint{
-      margin:0;
-      color:var(--muted);
-      line-height:1.45;
-      font-size:.94rem;
-    }
     .timer-status{
-      margin:8px 0 0;
+      margin:0;
       color:#dbeafe;
       line-height:1.4;
       font-size:.95rem;
@@ -249,15 +248,13 @@
       display:grid;
       gap:14px;
     }
-    details.exercise-card{
+    .exercise-card{
       border:1px solid rgba(148,163,184,.18);
       border-radius:18px;
       overflow:hidden;
       background:linear-gradient(180deg, rgba(15,23,42,.94), rgba(9,14,27,.95));
     }
-    details.exercise-card > summary{
-      list-style:none;
-      cursor:pointer;
+    .exercise-card > .card-head{
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -265,7 +262,6 @@
       padding:16px 18px;
       background:linear-gradient(180deg, rgba(23,32,51,.98), rgba(15,23,42,.96));
     }
-    details.exercise-card > summary::-webkit-details-marker{display:none}
     .summary-left{
       display:flex;
       align-items:flex-start;
@@ -714,7 +710,7 @@
         align-items:flex-start;
       }
       .section-head,
-      details.exercise-card > summary,
+      .exercise-card > .card-head,
       .session-head{
         align-items:flex-start;
         flex-direction:column;
@@ -741,7 +737,6 @@
     <section class="timer-card">
       <div class="timer-copy">
         <h2 class="timer-title" id="timerTitle">Timer</h2>
-        <p class="timer-hint" id="timerHint">Press <strong>space</strong> anywhere on the page to start the manual timer.</p>
         <p class="timer-status" id="timerStatus">Manual timer ready.</p>
       </div>
 
@@ -783,9 +778,8 @@
       </div>
       <div class="field">
         <label for="exportArea">Saved days</label>
-        <textarea id="exportArea" placeholder="Press Export History to build a sheet-friendly log. Type /gif-test and press Enter to test motivation GIFs."></textarea>
+        <textarea id="exportArea"></textarea>
       </div>
-      <div class="hint-row">Tip: type <strong>/gif-test</strong> in the box and press Enter to test all motivation GIF URLs.</div>
       <div class="gif-test-section" id="gifTestSection" hidden>
         <div class="gif-test-head">
           <div>
@@ -805,8 +799,6 @@
         </div>
         <div class="action-row">
           <button id="exportHistoryBtn" type="button">Export History</button>
-          <button id="expandAllBtn" type="button">Expand All</button>
-          <button id="collapseAllBtn" type="button">Collapse All</button>
           <button class="secondary" id="clearTodayBtn" type="button">Clear Today</button>
         </div>
       </div>
@@ -926,28 +918,46 @@
         holdSeconds: 20
       },
       {
-        id: 'ankle-twist',
-        name: 'Ankle Twist In and Out',
-        meta: '1 set x 20 reps • twice a day',
+        id: 'standing-lateral-weight-shift',
+        name: 'Standing Lateral Weight Shift',
+        meta: '1 set x 10 reps • ~10 seconds per shift • twice a day',
         tracking: 'session',
-        sets: 1,
-        target: '1 set x 20 reps'
+        sets: 1
+      },
+      {
+        id: 'ankle-inversion',
+        name: 'Ankle Inversion (In, Resistance Band)',
+        meta: '2 sets x 20 reps • resistance band • twice a day',
+        tracking: 'session',
+        sets: 2
+      },
+      {
+        id: 'ankle-eversion',
+        name: 'Ankle Eversion (Out, Resistance Band)',
+        meta: '2 sets x 20 reps • resistance band • twice a day',
+        tracking: 'session',
+        sets: 2
       },
       {
         id: 'ankle-pump',
         name: 'Ankle Pump (Up and Down)',
-        meta: '2 sets x 20 reps • twice a day',
+        meta: '2 sets x 20 reps • resistance band tied down • twice a day',
         tracking: 'session',
-        sets: 2,
-        target: '2 sets x 20 reps'
+        sets: 2
       },
       {
         id: 'ankle-circles',
         name: 'Ankle Circles',
         meta: '1 set x 20 reps • twice a day',
         tracking: 'session',
-        sets: 1,
-        target: '1 set x 20 reps'
+        sets: 1
+      },
+      {
+        id: 'ankle-rotation',
+        name: 'Ankle Rotation',
+        meta: 'Cross legs, stabilize heel, twist ball of foot • 1 set x 20 reps • twice a day',
+        tracking: 'session',
+        sets: 1
       }
     ];
 
@@ -1026,8 +1036,8 @@
 
     function renderPtExercise(exercise){
       return `
-        <details class="exercise-card" open data-exercise-id="${exercise.id}">
-          <summary>
+        <article class="exercise-card" data-exercise-id="${exercise.id}">
+          <div class="card-head">
             <div class="summary-left">
               <span class="badge">PT</span>
               <div>
@@ -1036,14 +1046,14 @@
               </div>
             </div>
             <div class="summary-pill" data-exercise-progress="${exercise.id}">0 / 2 sessions complete</div>
-          </summary>
+          </div>
           <div class="card-body">
             <div class="session-grid">
               ${exercise.stretch ? renderStretchSession(exercise, 1) : renderSimplePtSession(exercise, 1)}
               ${exercise.stretch ? renderStretchSession(exercise, 2) : renderSimplePtSession(exercise, 2)}
             </div>
           </div>
-        </details>
+        </article>
       `;
     }
 
@@ -1142,15 +1152,14 @@
               <div class="rep-grid">${setChecksHtml}</div>
             </div>
           </div>
-          <div class="hint-row">${exercise.target}</div>
         </section>
       `;
     }
 
     function renderTensExercise(exercise){
       return `
-        <details class="exercise-card" open data-exercise-id="${exercise.id}">
-          <summary>
+        <article class="exercise-card" data-exercise-id="${exercise.id}">
+          <div class="card-head">
             <div class="summary-left">
               <span class="badge tens">TENS</span>
               <div>
@@ -1159,14 +1168,14 @@
               </div>
             </div>
             <div class="summary-pill" data-exercise-progress="${exercise.id}">0 / 2 sessions complete</div>
-          </summary>
+          </div>
           <div class="card-body">
             <div class="session-grid">
               ${renderTensSession(exercise, 1)}
               ${renderTensSession(exercise, 2)}
             </div>
           </div>
-        </details>
+        </article>
       `;
     }
 
@@ -1530,7 +1539,6 @@
     }
 
     const timerTitleEl = document.getElementById('timerTitle');
-    const timerHintEl = document.getElementById('timerHint');
     const timerStatusEl = document.getElementById('timerStatus');
     const timerDisplay = document.getElementById('timerDisplay');
     const timerSecondsInput = document.getElementById('timerSeconds');
@@ -1541,6 +1549,45 @@
     const motivationModal = document.getElementById('motivationModal');
     const motivationImage = document.getElementById('motivationImage');
     const motivationCaption = document.getElementById('motivationCaption');
+
+    let audioCtx = null;
+
+    function unlockAudio(){
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return null;
+      if (!audioCtx) audioCtx = new AudioContextClass();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playTone(frequency, durationMs, volume, delayMs = 0){
+      const ctx = unlockAudio();
+      if (!ctx) return;
+      const startTime = ctx.currentTime + delayMs / 1000;
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(volume, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + durationMs / 1000);
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start(startTime);
+      oscillator.stop(startTime + durationMs / 1000 + 0.02);
+    }
+
+    function playStretchEndChime(){
+      playTone(880, 130, 0.055);
+      playTone(660, 170, 0.055, 140);
+    }
+
+    function playManualEndChime(){
+      playTone(700, 160, 0.045);
+    }
+
+    function playRestOverChime(){
+      playTone(520, 160, 0.03);
+    }
 
     let timerRemaining = MANUAL_TIMER_DEFAULT;
     let timerRunning = false;
@@ -1571,32 +1618,15 @@
     }
 
     function updateTimerDisplay(){
-      const modeViews = {
-        manual: {
-          title: 'Timer',
-          hint: 'Press space anywhere on the page to start the manual timer.'
-        },
-        prep: {
-          title: 'Stretch Prep',
-          hint: 'Five seconds to get into position.'
-        },
-        hold: {
-          title: 'Stretch Hold',
-          hint: 'Stay on the stretch until it completes.'
-        },
-        rest: {
-          title: 'Rest Timer',
-          hint: 'Ninety seconds before the next move.'
-        },
-        ready: {
-          title: 'Ready',
-          hint: 'Move the mouse when you are ready to keep going.'
-        }
+      const modeTitles = {
+        manual: 'Timer',
+        prep: 'Stretch Prep',
+        hold: 'Stretch Hold',
+        rest: 'Rest Timer',
+        ready: 'Ready'
       };
 
-      const view = modeViews[timerMode] || modeViews.manual;
-      timerTitleEl.textContent = view.title;
-      timerHintEl.innerHTML = view.hint;
+      timerTitleEl.textContent = modeTitles[timerMode] || modeTitles.manual;
       timerStatusEl.textContent = timerStatusText;
       timerDisplay.textContent = timerMode === 'ready' ? 'GO' : formatTimer(timerRemaining);
       timerDisplay.className = `timer-display mode-${timerMode}${timerRunning ? ' running' : ''}`;
@@ -1625,6 +1655,8 @@
       void timerFlash.offsetWidth;
       if (kind === 'stretch') timerFlash.classList.add('stretch-end');
       timerFlash.classList.add('active');
+      if (kind === 'stretch') playStretchEndChime();
+      else playManualEndChime();
     }
 
     function hideReadyOverlay(){
@@ -1639,6 +1671,7 @@
       timerRemaining = 0;
       timerStatusText = 'Rest finished. Move when you are ready for the next one.';
       updateTimerDisplay();
+      playRestOverChime();
     }
 
     function clearReadyOverlay(){
@@ -2015,14 +2048,6 @@
       refreshProgress();
     }
 
-    function expandAll(){
-      document.querySelectorAll('details.exercise-card').forEach(card => { card.open = true; });
-    }
-
-    function collapseAll(){
-      document.querySelectorAll('details.exercise-card').forEach(card => { card.open = false; });
-    }
-
     function formatTimer(seconds){
       const minutes = Math.floor(seconds / 60);
       const remainder = seconds % 60;
@@ -2043,7 +2068,15 @@
       clearReadyOverlay();
     }
 
+    function primeAudioOnce(){
+      unlockAudio();
+      document.removeEventListener('pointerdown', primeAudioOnce);
+      document.removeEventListener('keydown', primeAudioOnce);
+    }
+
     function initTimer(){
+      document.addEventListener('pointerdown', primeAudioOnce, { once: true });
+      document.addEventListener('keydown', primeAudioOnce, { once: true });
       const saved = localStorage.getItem(TIMER_SETTING_KEY);
       if (saved !== null) timerSecondsInput.value = saved;
       timerRemaining = timerDuration();
@@ -2083,8 +2116,6 @@
     function initActions(){
       document.getElementById('exportHistoryBtn').addEventListener('click', exportHistory);
       document.getElementById('copyExportBtn').addEventListener('click', copyExport);
-      document.getElementById('expandAllBtn').addEventListener('click', expandAll);
-      document.getElementById('collapseAllBtn').addEventListener('click', collapseAll);
       document.getElementById('clearTodayBtn').addEventListener('click', clearToday);
       document.getElementById('rerunGifTestBtn').addEventListener('click', runGifDiagnostics);
       document.getElementById('exportArea').addEventListener('keydown', event => {
