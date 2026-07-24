@@ -920,9 +920,14 @@
       {
         id: 'standing-lateral-weight-shift',
         name: 'Standing Lateral Weight Shift',
-        meta: '1 set x 10 reps • ~10 seconds per shift • twice a day',
-        tracking: 'session',
-        sets: 1
+        meta: '2 sets x 5 reps • 10 second hold • twice a day',
+        tracking: 'grid',
+        stretch: true,
+        sets: 2,
+        reps: 5,
+        prepSeconds: STRETCH_PREP_SECONDS,
+        holdSeconds: 10,
+        restSeconds: 30
       },
       {
         id: 'ankle-inversion',
@@ -1059,25 +1064,41 @@
 
     function renderStretchSession(exercise, sessionNumber){
       const sessionKey = `${exercise.id}-session${sessionNumber}`;
-      let repsHtml = '';
+      const restSeconds = exercise.restSeconds || AUTO_REST_SECONDS;
+      let setBlocksHtml = '';
 
-      for (let repIndex = 1; repIndex <= exercise.reps; repIndex += 1){
-        const fieldKey = `${sessionKey}-set1-rep${repIndex}`;
-        repsHtml += `
-          <label class="rep-box" data-stretch-control="true">
-            <input
-              type="checkbox"
-              data-save="${fieldKey}"
-              data-auto-session="${sessionKey}"
-              data-session-number="${sessionNumber}"
-              data-stretch-rep="true"
-              data-exercise-name="${exercise.name}"
-              data-rep-label="${repIndex}/${exercise.reps}"
-              data-prep-seconds="${exercise.prepSeconds}"
-              data-hold-seconds="${exercise.holdSeconds}"
-            />
-            <span>${repIndex}/${exercise.reps}</span>
-          </label>
+      for (let setIndex = 1; setIndex <= exercise.sets; setIndex += 1){
+        let repsHtml = '';
+
+        for (let repIndex = 1; repIndex <= exercise.reps; repIndex += 1){
+          const fieldKey = `${sessionKey}-set${setIndex}-rep${repIndex}`;
+          const isLastInSet = repIndex === exercise.reps;
+          const repLabel = exercise.sets > 1 ? `Set ${setIndex} • ${repIndex}/${exercise.reps}` : `${repIndex}/${exercise.reps}`;
+          repsHtml += `
+            <label class="rep-box" data-stretch-control="true">
+              <input
+                type="checkbox"
+                data-save="${fieldKey}"
+                data-auto-session="${sessionKey}"
+                data-session-number="${sessionNumber}"
+                data-stretch-rep="true"
+                data-exercise-name="${exercise.name}"
+                data-rep-label="${repLabel}"
+                data-prep-seconds="${exercise.prepSeconds}"
+                data-hold-seconds="${exercise.holdSeconds}"
+                data-last-in-set="${isLastInSet}"
+                data-rest-seconds="${restSeconds}"
+              />
+              <span>${repIndex}/${exercise.reps}</span>
+            </label>
+          `;
+        }
+
+        setBlocksHtml += `
+          <div class="set-block">
+            <div class="set-title">${exercise.sets > 1 ? `Set ${setIndex}` : 'Reps'}</div>
+            <div class="rep-grid">${repsHtml}</div>
+          </div>
         `;
       }
 
@@ -1097,10 +1118,7 @@
             <div class="session-count" data-session-count="${sessionKey}">0 / 0 reps done</div>
           </div>
           <div class="set-stack">
-            <div class="set-block">
-              <div class="set-title">Reps</div>
-              <div class="rep-grid">${repsHtml}</div>
-            </div>
+            ${setBlocksHtml}
           </div>
         </section>
       `;
@@ -1751,9 +1769,9 @@
       startCountdown(timerDuration(), 'manual', 'Manual timer running.', null);
     }
 
-    function startRestTimer(sourceLabel){
+    function startRestTimer(sourceLabel, seconds = AUTO_REST_SECONDS){
       startCountdown(
-        AUTO_REST_SECONDS,
+        seconds,
         'rest',
         `Rest after ${sourceLabel}.`,
         () => {
@@ -1773,10 +1791,12 @@
       flashTimer('stretch');
 
       const completionLabel = input.dataset.repLabel ? `${input.dataset.exerciseName} ${input.dataset.repLabel}` : input.dataset.exerciseName;
+      const isLastInSet = input.dataset.lastInSet === 'true';
+      const restSeconds = isLastInSet ? AUTO_REST_SECONDS : (Number.parseInt(input.dataset.restSeconds, 10) || AUTO_REST_SECONDS);
       clearPendingStretchCompletion();
       pendingStretchCompletionTimeout = window.setTimeout(() => {
         pendingStretchCompletionTimeout = null;
-        handlePtCompletion(completionLabel);
+        handlePtCompletion(completionLabel, restSeconds);
       }, STRETCH_END_FLASH_MS);
     }
 
@@ -1872,8 +1892,8 @@
       showMotivationModal(sourceLabel);
     }
 
-    function handlePtCompletion(sourceLabel){
-      startRestTimer(sourceLabel);
+    function handlePtCompletion(sourceLabel, restSeconds = AUTO_REST_SECONDS){
+      startRestTimer(sourceLabel, restSeconds);
       maybeShowMotivation(sourceLabel);
     }
 
