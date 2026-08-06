@@ -131,10 +131,13 @@
     }
     .timer-controls{
       display:grid;
-      grid-template-columns:minmax(110px,150px) repeat(2,auto);
+      grid-template-columns:minmax(110px,150px) repeat(3,auto);
       gap:10px;
       align-items:end;
       justify-content:end;
+    }
+    #pauseHoldBtn[hidden]{
+      display:none;
     }
     .summary-grid{
       display:grid;
@@ -748,6 +751,7 @@
           <input id="timerSeconds" type="number" min="1" step="1" value="20" />
         </div>
         <button class="primary" id="startTimerBtn" type="button">Start</button>
+        <button class="secondary" id="pauseHoldBtn" type="button" hidden>Pause</button>
         <button class="secondary" id="resetTimerBtn" type="button">Reset</button>
       </div>
     </section>
@@ -896,38 +900,48 @@
 
     const PT_EXERCISES = [
       {
-        id: 'upper-calf-stretch',
-        name: 'Upper Calf Stretch',
-        meta: '1 set x 5 reps • 20 seconds per stretch • twice a day',
+        id: 'pull-heel-forefoot-stretch',
+        name: 'Pull Heel Down / Pull Up on Forefoot Stretch',
+        meta: '3 reps x 30 second hold • target 90s total • twice a day',
         tracking: 'grid',
         stretch: true,
         sets: 1,
-        reps: 5,
+        reps: 3,
         prepSeconds: STRETCH_PREP_SECONDS,
-        holdSeconds: 20
+        holdSeconds: 30
       },
       {
         id: 'lower-calf-stretch',
         name: 'Lower Calf Stretch',
-        meta: '1 set x 5 reps • 20 seconds per stretch • twice a day',
+        meta: '3 reps x 30 second hold • target 90s total • twice a day',
         tracking: 'grid',
         stretch: true,
         sets: 1,
-        reps: 5,
+        reps: 3,
         prepSeconds: STRETCH_PREP_SECONDS,
-        holdSeconds: 20
+        holdSeconds: 30
       },
       {
-        id: 'standing-lateral-weight-shift',
-        name: 'Standing Lateral Weight Shift',
-        meta: '2 sets x 5 reps • 10 second hold • twice a day',
+        id: 'soleus-stretch-squat-stance',
+        name: 'Soleus Stretch (Squat Stance)',
+        meta: '3 reps x 30 second hold • target 90s total • twice a day',
         tracking: 'grid',
         stretch: true,
-        sets: 2,
-        reps: 5,
+        sets: 1,
+        reps: 3,
         prepSeconds: STRETCH_PREP_SECONDS,
-        holdSeconds: 10,
-        restSeconds: 30
+        holdSeconds: 30
+      },
+      {
+        id: 'single-leg-stance',
+        name: 'Single Leg Stance',
+        meta: '3 reps x 30 second hold • target 90s total • twice a day',
+        tracking: 'grid',
+        stretch: true,
+        sets: 1,
+        reps: 3,
+        prepSeconds: STRETCH_PREP_SECONDS,
+        holdSeconds: 30
       },
       {
         id: 'ankle-inversion',
@@ -944,9 +958,9 @@
         sets: 2
       },
       {
-        id: 'ankle-pump',
-        name: 'Ankle Pump (Up and Down)',
-        meta: '2 sets x 20 reps • resistance band tied down • twice a day',
+        id: 'heel-toe-raise',
+        name: 'Heel & Toe Raise',
+        meta: '2 sets x 20 reps • twice a day',
         tracking: 'session',
         sets: 2
       },
@@ -1562,6 +1576,7 @@
     const timerSecondsInput = document.getElementById('timerSeconds');
     const timerFlash = document.getElementById('timerFlash');
     const startTimerBtn = document.getElementById('startTimerBtn');
+    const pauseHoldBtn = document.getElementById('pauseHoldBtn');
     const resetTimerBtn = document.getElementById('resetTimerBtn');
     const readyOverlay = document.getElementById('readyOverlay');
     const motivationModal = document.getElementById('motivationModal');
@@ -1615,6 +1630,7 @@
     let timerStatusText = 'Manual timer ready.';
     let timerCompletion = null;
     let activeStretch = null;
+    let timerPaused = false;
     let readyOverlayShownAt = 0;
     let pendingStretchCompletionTimeout = null;
     let motivationCompletionCount = 0;
@@ -1650,6 +1666,8 @@
       timerDisplay.className = `timer-display mode-${timerMode}${timerRunning ? ' running' : ''}`;
       startTimerBtn.disabled = timerRunning;
       resetTimerBtn.textContent = timerRunning || timerMode !== 'manual' ? 'Cancel' : 'Reset';
+      pauseHoldBtn.hidden = !(timerMode === 'hold' && activeStretch);
+      pauseHoldBtn.textContent = timerPaused ? 'Resume' : 'Pause';
     }
 
     function clearTimerInterval(){
@@ -1660,6 +1678,7 @@
       timerRunning = false;
       timerEndsAt = null;
       timerCompletion = null;
+      timerPaused = false;
     }
 
     function clearPendingStretchCompletion(){
@@ -1798,6 +1817,34 @@
         pendingStretchCompletionTimeout = null;
         handlePtCompletion(completionLabel, restSeconds);
       }, STRETCH_END_FLASH_MS);
+    }
+
+    function pauseStretchHold(){
+      if (!activeStretch || timerMode !== 'hold' || !timerRunning) return;
+      if (timerInterval){
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      timerRunning = false;
+      timerPaused = true;
+      timerStatusText = `Paused — ${activeStretch.exerciseName} ${activeStretch.repLabel} at ${timerRemaining}s left. Resume when ready.`;
+      updateTimerDisplay();
+    }
+
+    function resumeStretchHold(){
+      if (!activeStretch || timerMode !== 'hold' || !timerPaused) return;
+      timerPaused = false;
+      timerEndsAt = Date.now() + (timerRemaining * 1000);
+      timerRunning = true;
+      timerStatusText = `Hold ${activeStretch.exerciseName} ${activeStretch.repLabel} for ${activeStretch.holdSeconds} seconds.`;
+      updateTimerDisplay();
+      tickTimer();
+      timerInterval = setInterval(tickTimer, 200);
+    }
+
+    function togglePauseHold(){
+      if (timerPaused) resumeStretchHold();
+      else pauseStretchHold();
     }
 
     function startStretchFlow(input){
@@ -2108,6 +2155,7 @@
       timerSecondsInput.addEventListener('input', applyTimerSetting);
       timerSecondsInput.addEventListener('change', applyTimerSetting);
       startTimerBtn.addEventListener('click', startManualTimer);
+      pauseHoldBtn.addEventListener('click', togglePauseHold);
       resetTimerBtn.addEventListener('click', () => {
         cancelActiveStretch(false);
         hideReadyOverlay();
