@@ -960,23 +960,24 @@
       {
         id: 'heel-toe-raise',
         name: 'Heel & Toe Raise',
+        meta: '2 sets x 20 reps (4 x 5) • twice a day',
+        tracking: 'session',
+        sets: 2,
+        chunksPerSet: 4
+      },
+      {
+        id: 'ankle-circles',
+        name: 'Ankle Circles',
         meta: '2 sets x 20 reps • twice a day',
         tracking: 'session',
         sets: 2
       },
       {
-        id: 'ankle-circles',
-        name: 'Ankle Circles',
-        meta: '1 set x 20 reps • twice a day',
-        tracking: 'session',
-        sets: 1
-      },
-      {
         id: 'ankle-rotation',
         name: 'Ankle Rotation',
-        meta: 'Cross legs, stabilize heel, twist ball of foot • 1 set x 20 reps • twice a day',
+        meta: 'Cross legs, stabilize heel, twist ball of foot • 2 sets x 20 reps • twice a day',
         tracking: 'session',
-        sets: 1
+        sets: 2
       }
     ];
 
@@ -1140,24 +1141,55 @@
 
     function renderSimplePtSession(exercise, sessionNumber){
       const sessionKey = `${exercise.id}-session${sessionNumber}`;
-      let setChecksHtml = '';
+      const chunksPerSet = exercise.chunksPerSet || 1;
+      let setBlocksHtml = '';
 
-      for (let setIndex = 1; setIndex <= exercise.sets; setIndex += 1){
-        const fieldKey = `${sessionKey}-set${setIndex}`;
-        setChecksHtml += `
-          <label class="rep-box">
-            <input
-              type="checkbox"
-              data-save="${fieldKey}"
-              data-auto-session="${sessionKey}"
-              data-session-number="${sessionNumber}"
-              data-pt-set="true"
-              data-pt-label="${exercise.name} set ${setIndex}"
-            />
-            <span>${setIndex}</span>
-          </label>
+      function renderChecksHtml(setIndex){
+        let checksHtml = '';
+        for (let chunkIndex = 1; chunkIndex <= chunksPerSet; chunkIndex += 1){
+          const fieldKey = chunksPerSet > 1 ? `${sessionKey}-set${setIndex}-chunk${chunkIndex}` : `${sessionKey}-set${setIndex}`;
+          const boxLabel = chunksPerSet > 1 ? chunkIndex : setIndex;
+          const ptLabel = chunksPerSet > 1 ? `${exercise.name} set ${setIndex} chunk ${chunkIndex}` : `${exercise.name} set ${setIndex}`;
+          checksHtml += `
+            <label class="rep-box">
+              <input
+                type="checkbox"
+                data-save="${fieldKey}"
+                data-auto-session="${sessionKey}"
+                data-session-number="${sessionNumber}"
+                data-pt-set="true"
+                data-pt-label="${ptLabel}"
+              />
+              <span>${boxLabel}</span>
+            </label>
+          `;
+        }
+        return checksHtml;
+      }
+
+      if (chunksPerSet > 1){
+        for (let setIndex = 1; setIndex <= exercise.sets; setIndex += 1){
+          setBlocksHtml += `
+            <div class="set-block">
+              <div class="set-title">Set ${setIndex}</div>
+              <div class="rep-grid">${renderChecksHtml(setIndex)}</div>
+            </div>
+          `;
+        }
+      } else {
+        let checksHtml = '';
+        for (let setIndex = 1; setIndex <= exercise.sets; setIndex += 1){
+          checksHtml += renderChecksHtml(setIndex);
+        }
+        setBlocksHtml = `
+          <div class="set-block">
+            <div class="set-title">Sets</div>
+            <div class="rep-grid">${checksHtml}</div>
+          </div>
         `;
       }
+
+      const unit = chunksPerSet > 1 ? 'chunks' : 'sets';
 
       return `
         <section class="session-card" data-session-card="${sessionKey}">
@@ -1175,14 +1207,11 @@
             <div
               class="session-count"
               data-session-count="${sessionKey}"
-              data-session-unit="sets"
-            >0 / 0 sets done</div>
+              data-session-unit="${unit}"
+            >0 / 0 ${unit} done</div>
           </div>
           <div class="set-stack">
-            <div class="set-block">
-              <div class="set-title">Sets</div>
-              <div class="rep-grid">${setChecksHtml}</div>
-            </div>
+            ${setBlocksHtml}
           </div>
         </section>
       `;
