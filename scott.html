@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Scott Workout Tracker</title>
+  <style>
+    :root{
+      --bg:#0f172a; --panel:#111827; --panel2:#1f2937; --text:#e5e7eb; --muted:#94a3b8;
+      --line:#334155; --free:#2563eb; --machine:#dc2626; --home:#eab308; --green:#16a34a;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:1040px;margin:0 auto;padding:16px 12px 40px}
+    h1{text-align:center;margin:8px 0 8px;font-size:1.5rem}
+    .top-note{text-align:center;color:var(--muted);font-size:.95rem;margin:0 0 16px}
+    .top-bar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:center; margin:0 0 16px}
+    button{border:1px solid #475569;background:#111827;color:var(--text);border-radius:10px;padding:10px 14px;font-size:.95rem;cursor:pointer}
+    button.primary{background:var(--green); border-color:var(--green); color:white; font-weight:700}
+    button.secondary{background:#0b1220}
+    .legend{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;color:var(--muted);font-size:.85rem;margin-bottom:12px}
+    .legend span{display:flex;align-items:center;gap:6px}
+    .badge{width:22px;height:22px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#fff;flex:0 0 auto}
+    .free{background:#2563eb} .machine{background:#dc2626} .home{background:#eab308;color:#111827}
+    details.section{background:#111827;border:1px solid #334155;border-radius:14px;margin:10px 0;overflow:hidden}
+    details.section > summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:700;background:#1f2937;font-size:1.05rem}
+    details.section > summary::-webkit-details-marker{display:none}
+    .section-body{padding:10px 10px 12px}
+    details.exercise{border:1px solid #334155;border-radius:12px;margin:8px 0;overflow:hidden;background:#0b1220}
+    details.exercise > summary{list-style:none;cursor:pointer;padding:12px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    details.exercise > summary::-webkit-details-marker{display:none}
+    .left{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+    .name{font-weight:700;line-height:1.2}
+    .sets{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+    .sets label{display:flex;align-items:center;gap:3px;color:#94a3b8;font-size:.78rem}
+    .pill{border:1px solid #334155;background:#0b1220;border-radius:999px;padding:4px 8px;color:#94a3b8;font-size:.8rem;display:inline-block}
+    .content{padding:0 12px 12px;border-top:1px solid #334155}
+    .meta{color:#94a3b8;margin:10px 0 8px;font-size:.92rem}
+    .howto{line-height:1.35;color:#d1d5db;font-size:.95rem;margin:8px 0 12px}
+    .grid2,.grid3,.grid4{display:grid;gap:10px}
+    .grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .field{display:flex;flex-direction:column;gap:4px}
+    .field label{color:#94a3b8;font-size:.82rem}
+    input, select, textarea{width:100%;border:1px solid #475569;background:#111827;color:#e5e7eb;border-radius:10px;padding:10px 11px;font-size:1rem}
+    textarea{min-height:72px; resize:vertical}
+    .hint{color:#94a3b8; font-size:.82rem; margin-top:4px}
+    .week-box,.export-box{border:1px solid #334155; border-radius:12px; background:#0b1220; padding:12px; margin-bottom:14px}
+    .week-meta{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; color:#94a3b8; font-size:.9rem}
+    #exportArea{min-height:180px}
+    .history-item{border-top:1px solid #334155; padding:8px 0; color:#94a3b8; font-size:.9rem}
+    .history-item:first-child{border-top:none}
+    @media (max-width:800px){.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:640px){.grid2,.grid3,.grid4{grid-template-columns:1fr} details.exercise > summary{align-items:flex-start} .sets{flex-wrap:wrap;justify-content:flex-end}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Scott Workout Tracker</h1>
+  <div class="top-note">Weekly training plan with targets, logging, export, and next-week suggestions.</div>
+
+  <div class="week-box">
+    <div class="week-meta">
+      <div><strong>Current week:</strong> <span id="currentWeek">1</span></div>
+      <div><strong>Last transition:</strong> <span id="lastTransition">none</span></div>
+      <div><strong>Saved weeks:</strong> <span id="savedWeeks">0</span></div>
+    </div>
+    <div class="top-bar">
+      <button class="primary" id="transitionBtn">Transition to Next Week</button>
+      <button id="exportBtn">Export Current Week</button>
+      <button id="exportLastBtn">Export Last Saved Week</button>
+      <button id="clearChecksBtn">Clear This Week's Checkboxes</button>
+    </div>
+    <div class="hint">Transition saves this week, clears checkboxes and notes, and rolls working weights forward based on difficulty.</div>
+  </div>
+
+  <div class="export-box">
+    <div class="top-bar"><strong style="color:var(--muted)">Copy and paste this back into chat for updates</strong></div>
+    <textarea id="exportArea" placeholder="Press Export Current Week or Export Last Saved Week"></textarea>
+    <div class="top-bar"><button class="secondary" id="copyExportBtn">Copy Export Text</button></div>
+  </div>
+
+  <details class="section">
+    <summary>Saved Week History</summary>
+    <div class="section-body" id="historyList">
+      <div class="hint">No saved weeks yet.</div>
+    </div>
+  </details>
+
+  <div class="legend">
+    <span><i class="badge free">F</i> Free weights</span>
+    <span><i class="badge machine">M</i> Machine</span>
+    <span><i class="badge home">H</i> Home / bodyweight</span>
+  </div>
+
+<details class="section"><summary>Day A: Squat &amp; Push</summary><div class="section-body">
+    <details class="exercise">
+      <summary><div class="left"><span class="badge free">F</span><div class="name">Barbell Back Squat</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayA-squat-s1"></label><label>2 <input type="checkbox" data-save="dayA-squat-s2"></label><label>3 <input type="checkbox" data-save="dayA-squat-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 6 to 8</div>
+        <div class="howto">Keep your chest proud and drive your knees outward inline with your toes as you descend.</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="dayA-squat-weight" placeholder="lbs or bodyweight" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayA-squat-increment" placeholder="5 to 10" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayA-squat-reps" placeholder="8/7/6" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayA-squat-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayA-squat-notes" placeholder="form, substitutions, varied set weights..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge free">F</span><div class="name">Dumbbell Bench Press</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayA-bench-s1"></label><label>2 <input type="checkbox" data-save="dayA-bench-s2"></label><label>3 <input type="checkbox" data-save="dayA-bench-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 8 to 12</div>
+        <div class="howto">Retract your shoulder blades into the bench and press up in a slight sweeping arc over your chest.</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight (per dumbbell)</label><input data-save="dayA-bench-weight" placeholder="lbs" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayA-bench-increment" placeholder="5 lbs total" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayA-bench-reps" placeholder="12/11/10" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayA-bench-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayA-bench-notes" placeholder="form, substitutions, varied set weights..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge machine">M</span><div class="name">Lat Pulldown</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayA-pulldown-s1"></label><label>2 <input type="checkbox" data-save="dayA-pulldown-s2"></label><label>3 <input type="checkbox" data-save="dayA-pulldown-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 10 to 12</div>
+        <div class="howto">Pull the bar to your upper chest by driving your elbows down toward your back pockets.</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="dayA-pulldown-weight" placeholder="lbs" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayA-pulldown-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayA-pulldown-reps" placeholder="12/12/10" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayA-pulldown-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayA-pulldown-notes" placeholder="form, substitutions, varied set weights..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge free">F</span><div class="name">Dumbbell Romanian Deadlift</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayA-rdl-s1"></label><label>2 <input type="checkbox" data-save="dayA-rdl-s2"></label><label>3 <input type="checkbox" data-save="dayA-rdl-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 10 to 12</div>
+        <div class="howto">Hinge at your hips by pushing your glutes backward, keeping the weights tight against your legs.</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight (per dumbbell)</label><input data-save="dayA-rdl-weight" placeholder="lbs" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayA-rdl-increment" placeholder="5 lbs total" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayA-rdl-reps" placeholder="12/12/10" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayA-rdl-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayA-rdl-notes" placeholder="form, substitutions, varied set weights..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge home">H</span><div class="name">RKC Plank</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayA-plank-s1"></label><label>2 <input type="checkbox" data-save="dayA-plank-s2"></label><label>3 <input type="checkbox" data-save="dayA-plank-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 30 to 45 sec</div>
+        <div class="howto">Squeeze your glutes, quads, and fists as hard as possible while actively pulling your elbows toward your toes.</div>
+        <div class="grid2">
+          <div class="field"><label>Hold time (sec)</label><input data-save="dayA-plank-weight" placeholder="seconds" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayA-plank-increment" placeholder="5 sec" data-weight-step="true" /></div>
+          <div class="field"><label>Times held by set</label><input data-save="dayA-plank-reps" placeholder="45/40/35 sec" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayA-plank-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayA-plank-notes" placeholder="form, how it felt..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge machine">M</span><div class="name">Incline Treadmill Walk</div></div><div class="sets"><span class="pill">cardio</span></div></summary>
+      <div class="content">
+        <div class="meta">15 to 20 min</div>
+        <div class="howto">Maintain a brisk pace at a 4% to 6% incline without holding onto the handrails.</div>
+        <div class="grid2">
+          <div class="field"><label>Actual time (min)</label><input data-save="dayA-treadmill-time" placeholder="18" /></div>
+          <div class="field"><label>Incline %</label><input data-save="dayA-treadmill-incline" placeholder="4 to 6" /></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="dayA-treadmill-notes" placeholder="how it felt, incline changes..."></textarea></div>
+      </div>
+    </details>
+    </div></details>
+
+<details class="section"><summary>Day B: Deadlift &amp; Pull</summary><div class="section-body">
+    <details class="exercise">
+      <summary><div class="left"><span class="badge free">F</span><div class="name">Barbell Conventional Deadlift</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayB-deadlift-s1"></label><label>2 <input type="checkbox" data-save="dayB-deadlift-s2"></label><label>3 <input type="checkbox" data-save="dayB-deadlift-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 5</div>
+        <div class="howto">Pack your armpits to engage your lats, pull the slack out of the bar, and push the floor away.</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="dayB-deadlift-weight" placeholder="lbs" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayB-deadlift-increment" placeholder="10" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayB-deadlift-reps" placeholder="5/5/5" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayB-deadlift-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayB-deadlift-notes" placeholder="form, substitutions, varied set weights..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge machine">M</span><div class="name">Seated Cable Row</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayB-row-s1"></label><label>2 <input type="checkbox" data-save="dayB-row-s2"></label><label>3 <input type="checkbox" data-save="dayB-row-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 8 to 12</div>
+        <div class="howto">Sit tall, pull the handle toward your lower stomach, and squeeze your shoulder blades together.</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="dayB-row-weight" placeholder="lbs" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayB-row-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayB-row-reps" placeholder="12/12/10" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayB-row-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayB-row-notes" placeholder="form, substitutions, varied set weights..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge free">F</span><div class="name">Standing Dumbbell Overhead Press</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayB-ohp-s1"></label><label>2 <input type="checkbox" data-save="dayB-ohp-s2"></label><label>3 <input type="checkbox" data-save="dayB-ohp-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 8 to 12</div>
+        <div class="howto">Squeeze your glutes and brace your core to prevent your lower back from arching as you press.</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight (per dumbbell)</label><input data-save="dayB-ohp-weight" placeholder="lbs" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayB-ohp-increment" placeholder="5 lbs total" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayB-ohp-reps" placeholder="12/11/10" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayB-ohp-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayB-ohp-notes" placeholder="form, substitutions, varied set weights..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge home">H</span><div class="name">Hanging Knee Raise</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayB-kneeraise-s1"></label><label>2 <input type="checkbox" data-save="dayB-kneeraise-s2"></label><label>3 <input type="checkbox" data-save="dayB-kneeraise-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 12 to 15, hold each rep at the top</div>
+        <div class="howto">Focus on curling your pelvis upward toward your chest rather than just swinging your legs up.</div>
+        <div class="grid2">
+          <div class="field"><label>Rep target</label><input data-save="dayB-kneeraise-weight" placeholder="reps" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayB-kneeraise-increment" placeholder="1 to 2 reps" data-weight-step="true" /></div>
+          <div class="field"><label>Hold time per rep (sec)</label><input data-save="dayB-kneeraise-hold-weight" placeholder="seconds" data-weight="true" data-difficulty-prefix="dayB-kneeraise" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayB-kneeraise-hold-increment" placeholder="2 to 3 sec" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayB-kneeraise-reps" placeholder="15/14/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayB-kneeraise-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayB-kneeraise-notes" placeholder="form, how it felt..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge machine">M</span><div class="name">Captain's Chair Straight Leg Raise</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayB-legraise-s1"></label><label>2 <input type="checkbox" data-save="dayB-legraise-s2"></label><label>3 <input type="checkbox" data-save="dayB-legraise-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 10 to 12, hold each rep at the top</div>
+        <div class="howto">Keep your upper body pressed firmly back and raise your legs until they are parallel to the floor.</div>
+        <div class="grid2">
+          <div class="field"><label>Rep target</label><input data-save="dayB-legraise-weight" placeholder="reps" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayB-legraise-increment" placeholder="1 to 2 reps" data-weight-step="true" /></div>
+          <div class="field"><label>Hold time per rep (sec)</label><input data-save="dayB-legraise-hold-weight" placeholder="seconds" data-weight="true" data-difficulty-prefix="dayB-legraise" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayB-legraise-hold-increment" placeholder="2 to 3 sec" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayB-legraise-reps" placeholder="12/11/10" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayB-legraise-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayB-legraise-notes" placeholder="form, how it felt..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge machine">M</span><div class="name">Rowing Machine (Ergometer)</div></div><div class="sets"><span class="pill">cardio</span></div></summary>
+      <div class="content">
+        <div class="meta">10 to 15 min</div>
+        <div class="howto">Drive powerfully through your legs first, then lean back slightly and pull the handle to your ribs.</div>
+        <div class="grid2">
+          <div class="field"><label>Time to 2000m</label><input data-save="dayB-erg-time2k" placeholder="9:45" /></div>
+          <div class="field"><label>Damper / resistance</label><input data-save="dayB-erg-resistance" placeholder="5" /></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="dayB-erg-notes" placeholder="how it felt, pacing..."></textarea></div>
+      </div>
+    </details>
+    </div></details>
+
+<details class="section"><summary>Day C: Lunge &amp; Hinge</summary><div class="section-body">
+    <details class="exercise">
+      <summary><div class="left"><span class="badge free">F</span><div class="name">Bulgarian Split Squat</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayC-splitsquat-s1"></label><label>2 <input type="checkbox" data-save="dayC-splitsquat-s2"></label><label>3 <input type="checkbox" data-save="dayC-splitsquat-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 8 to 10 each leg</div>
+        <div class="howto">Drop your back knee straight down toward the floor, keeping most of your weight on your front heel.</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight (per dumbbell)</label><input data-save="dayC-splitsquat-weight" placeholder="lbs" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayC-splitsquat-increment" placeholder="5 lbs total" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayC-splitsquat-reps" placeholder="10/9/8" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayC-splitsquat-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayC-splitsquat-notes" placeholder="form, substitutions, varied set weights..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge free">F</span><div class="name">Chest-Supported Dumbbell Row</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayC-row-s1"></label><label>2 <input type="checkbox" data-save="dayC-row-s2"></label><label>3 <input type="checkbox" data-save="dayC-row-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 10 to 12</div>
+        <div class="howto">Flare your elbows out slightly at a 45-degree angle to heavily target your upper back muscles.</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight (per dumbbell)</label><input data-save="dayC-row-weight" placeholder="lbs" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayC-row-increment" placeholder="5 lbs total" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayC-row-reps" placeholder="12/12/10" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayC-row-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayC-row-notes" placeholder="form, substitutions, varied set weights..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge machine">M</span><div class="name">Lying Leg Curl</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayC-legcurl-s1"></label><label>2 <input type="checkbox" data-save="dayC-legcurl-s2"></label><label>3 <input type="checkbox" data-save="dayC-legcurl-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 10 to 12</div>
+        <div class="howto">Keep your hips firmly pressed down into the bench pad as you curl the weight toward your glutes.</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="dayC-legcurl-weight" placeholder="lbs" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayC-legcurl-increment" placeholder="5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayC-legcurl-reps" placeholder="12/12/10" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayC-legcurl-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayC-legcurl-notes" placeholder="form, substitutions, varied set weights..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge machine">M</span><div class="name">Cable Pallof Press</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayC-pallof-s1"></label><label>2 <input type="checkbox" data-save="dayC-pallof-s2"></label><label>3 <input type="checkbox" data-save="dayC-pallof-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 12 to 15 each side</div>
+        <div class="howto">Press the cable straight out in front of your chest and resist the side-pull using your obliques.</div>
+        <div class="grid2">
+          <div class="field"><label>Working weight</label><input data-save="dayC-pallof-weight" placeholder="lbs" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayC-pallof-increment" placeholder="2.5 to 5" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayC-pallof-reps" placeholder="15/15/12" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayC-pallof-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayC-pallof-notes" placeholder="form, substitutions, varied set weights..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge free">F</span><div class="name">Ab Wheel Rollout</div></div><div class="sets"><label>1 <input type="checkbox" data-save="dayC-abwheel-s1"></label><label>2 <input type="checkbox" data-save="dayC-abwheel-s2"></label><label>3 <input type="checkbox" data-save="dayC-abwheel-s3"></label></div></summary>
+      <div class="content">
+        <div class="meta">3 x 8 to 10</div>
+        <div class="howto">Tuck your tailbone and roll out only as far as you can comfortably control without sagging your lower back.</div>
+        <div class="grid2">
+          <div class="field"><label>Rep target</label><input data-save="dayC-abwheel-weight" placeholder="reps" data-weight="true" /></div>
+          <div class="field"><label>Weekly increase if easy</label><input data-save="dayC-abwheel-increment" placeholder="1 to 2 reps" data-weight-step="true" /></div>
+          <div class="field"><label>Reps by set</label><input data-save="dayC-abwheel-reps" placeholder="10/9/8" /></div>
+          <div class="field">
+            <label>Difficulty</label>
+            <select data-save="dayC-abwheel-difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:1/-1"><label>Notes</label><textarea data-save="dayC-abwheel-notes" placeholder="form, how it felt..."></textarea></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="exercise">
+      <summary><div class="left"><span class="badge machine">M</span><div class="name">Stationary Bike (HIIT Sprints)</div></div><div class="sets"><span class="pill">cardio</span></div></summary>
+      <div class="content">
+        <div class="meta">15 to 20 min</div>
+        <div class="howto">Alternate between 30 seconds of maximum effort sprinting and 60 seconds of easy recovery pedaling.</div>
+        <div class="grid2">
+          <div class="field"><label>Actual time (min)</label><input data-save="dayC-bike-time" placeholder="18" /></div>
+          <div class="field"><label>Rounds completed</label><input data-save="dayC-bike-rounds" placeholder="8" /></div>
+        </div>
+        <div class="field" style="margin-top:10px"><label>Notes</label><textarea data-save="dayC-bike-notes" placeholder="how it felt, effort level..."></textarea></div>
+      </div>
+    </details>
+    </div></details>
+
+</div>
+<script>
+const STORAGE_PREFIX = 'scotttracker:';
+const META_KEY = STORAGE_PREFIX + 'meta';
+function loadMeta(){ try { return JSON.parse(localStorage.getItem(META_KEY)) || {currentWeek:1,lastTransition:null,history:[]}; } catch(e){ return {currentWeek:1,lastTransition:null,history:[]}; } }
+function saveMeta(meta){ localStorage.setItem(META_KEY, JSON.stringify(meta)); }
+function saveField(el){ const key = STORAGE_PREFIX + el.dataset.save; if (el.type === 'checkbox') localStorage.setItem(key, String(el.checked)); else localStorage.setItem(key, el.value); }
+function initFields(){
+  document.querySelectorAll('[data-save]').forEach(el => {
+    const key = STORAGE_PREFIX + el.dataset.save;
+    if (el.type === 'checkbox'){ el.checked = localStorage.getItem(key) === 'true'; el.addEventListener('change', () => saveField(el)); }
+    else { const saved = localStorage.getItem(key); if (saved !== null) el.value = saved; if (el.tagName === 'SELECT' && saved === null) el.value = 'medium'; el.addEventListener('input', () => saveField(el)); el.addEventListener('change', () => saveField(el)); }
+  });
+}
+function updateMetaUI(){ const meta = loadMeta(); document.getElementById('currentWeek').textContent = meta.currentWeek || 1; document.getElementById('lastTransition').textContent = meta.lastTransition || 'none'; document.getElementById('savedWeeks').textContent = (meta.history || []).length; renderHistory(); }
+function parseNumberLike(val){ if (!val) return null; const m = String(val).match(/-?\d+(\.\d+)?/); return m ? Number(m[0]) : null; }
+function currentSnapshot(){ const meta = loadMeta(); const snap = { week: meta.currentWeek || 1, savedAt: new Date().toLocaleString(), fields: {} }; document.querySelectorAll('[data-save]').forEach(el => { snap.fields[el.dataset.save] = el.type === 'checkbox' ? el.checked : el.value; }); return snap; }
+function formatSnapshot(snap){
+  const f = snap.fields || {}; const lines = [];
+  lines.push(`Week ${snap.week} export`); lines.push(`Saved: ${snap.savedAt || 'current view'}`); lines.push('');
+  function pushIf(label, val){ if (val !== undefined && val !== null && String(val).trim() !== '') lines.push(`${label}: ${val}`); }
+  function ex(prefix, title){ const checks = [1,2,3].filter(i => f[`${prefix}-s${i}`] === true).length; lines.push(title); pushIf('  Sets checked', checks ? checks : ''); pushIf('  Weight/target', f[`${prefix}-weight`]); pushIf('  Hold time (sec)', f[`${prefix}-hold-weight`]); pushIf('  Reps', f[`${prefix}-reps`]); pushIf('  Difficulty', f[`${prefix}-difficulty`]); pushIf('  Notes', f[`${prefix}-notes`]); lines.push(''); }
+  function cardioCustom(prefix, title, fields){ lines.push(title); fields.forEach(([label, key]) => pushIf(`  ${label}`, f[`${prefix}-${key}`])); pushIf('  Notes', f[`${prefix}-notes`]); lines.push(''); }
+  ex('dayA-squat','Day A barbell back squat'); ex('dayA-bench','Day A dumbbell bench press'); ex('dayA-pulldown','Day A lat pulldown'); ex('dayA-rdl','Day A dumbbell Romanian deadlift'); ex('dayA-plank','Day A RKC plank');
+  cardioCustom('dayA-treadmill','Day A incline treadmill walk',[['Actual time (min)','time'],['Incline %','incline']]);
+  ex('dayB-deadlift','Day B barbell conventional deadlift'); ex('dayB-row','Day B seated cable row'); ex('dayB-ohp','Day B standing dumbbell overhead press'); ex('dayB-kneeraise','Day B hanging knee raise'); ex('dayB-legraise',"Day B captain's chair straight leg raise");
+  cardioCustom('dayB-erg','Day B rowing ergometer',[['Time to 2000m','time2k'],['Damper/resistance','resistance']]);
+  ex('dayC-splitsquat','Day C Bulgarian split squat'); ex('dayC-row','Day C chest-supported dumbbell row'); ex('dayC-legcurl','Day C lying leg curl'); ex('dayC-pallof','Day C cable Pallof press'); ex('dayC-abwheel','Day C ab wheel rollout');
+  cardioCustom('dayC-bike','Day C stationary bike HIIT',[['Actual time (min)','time'],['Rounds completed','rounds']]);
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n');
+}
+function renderHistory(){
+  const meta = loadMeta(); const box = document.getElementById('historyList'); const hist = meta.history || [];
+  if (!hist.length){ box.innerHTML = '<div class="hint">No saved weeks yet.</div>'; return; }
+  box.innerHTML = hist.slice().reverse().map((h, idx) => { const actualIndex = hist.length - 1 - idx; return `<div class="history-item"><strong>Week ${h.week}</strong> saved ${h.savedAt || ''}<div class="top-bar" style="justify-content:flex-start; margin-top:8px"><button onclick="exportHistory(${actualIndex})">Export</button></div></div>`; }).join('');
+}
+function exportHistory(idx){ const meta = loadMeta(); const snap = (meta.history || [])[idx]; if (!snap) return; document.getElementById('exportArea').value = formatSnapshot(snap); }
+window.exportHistory = exportHistory;
+function transitionWeek(){
+  const meta = loadMeta(); const snapshot = currentSnapshot();
+  document.querySelectorAll('input[data-weight="true"]').forEach(el => {
+    const baseKey = el.dataset.save; const basePrefix = baseKey.replace(/-weight$/, '');
+    const difficultyPrefix = el.dataset.difficultyPrefix || basePrefix;
+    const difficultyEl = document.querySelector(`[data-save="${difficultyPrefix}-difficulty"]`);
+    const incrementEl = document.querySelector(`[data-save="${basePrefix}-increment"]`);
+    const currentVal = el.value; const currentNum = parseNumberLike(currentVal); const increment = parseNumberLike(incrementEl ? incrementEl.value : '') ?? 5; let nextVal = currentVal;
+    if (currentNum !== null) { const diff = difficultyEl ? difficultyEl.value : 'medium'; if (diff === 'easy') nextVal = String(currentNum + increment); else if (diff === 'hard') nextVal = String(Math.max(0, currentNum - increment)); else nextVal = String(currentNum); }
+    localStorage.setItem(STORAGE_PREFIX + baseKey, nextVal);
+  });
+  document.querySelectorAll('[data-save]').forEach(el => {
+    const k = el.dataset.save; const fullKey = STORAGE_PREFIX + k; const preserve = k.endsWith('-weight') || k.endsWith('-increment');
+    if (preserve) { if (el.type !== 'checkbox') el.value = localStorage.getItem(fullKey) || ''; return; }
+    if (el.type === 'checkbox') { el.checked = false; localStorage.setItem(fullKey, 'false'); }
+    else if (el.tagName === 'SELECT') { el.value = 'medium'; localStorage.setItem(fullKey, 'medium'); }
+    else { el.value = ''; localStorage.setItem(fullKey, ''); }
+  });
+  meta.history = meta.history || []; meta.history.push(snapshot); meta.currentWeek = (meta.currentWeek || 1) + 1; meta.lastTransition = new Date().toLocaleDateString(); saveMeta(meta); updateMetaUI(); document.getElementById('exportArea').value = formatSnapshot(snapshot);
+}
+function clearChecks(){ document.querySelectorAll('input[type="checkbox"][data-save]').forEach(el => { el.checked = false; localStorage.setItem(STORAGE_PREFIX + el.dataset.save, 'false'); }); }
+function exportCurrent(){ document.getElementById('exportArea').value = formatSnapshot(currentSnapshot()); }
+function exportLastSaved(){ const meta = loadMeta(); const hist = meta.history || []; if (!hist.length) return; document.getElementById('exportArea').value = formatSnapshot(hist[hist.length - 1]); }
+async function copyExport(){ const area = document.getElementById('exportArea'); area.select(); area.setSelectionRange(0, 999999); try { await navigator.clipboard.writeText(area.value); } catch(e) { document.execCommand('copy'); } }
+document.getElementById('transitionBtn').addEventListener('click', transitionWeek);
+document.getElementById('clearChecksBtn').addEventListener('click', clearChecks);
+document.getElementById('exportBtn').addEventListener('click', exportCurrent);
+document.getElementById('exportLastBtn').addEventListener('click', exportLastSaved);
+document.getElementById('copyExportBtn').addEventListener('click', copyExport);
+initFields(); updateMetaUI();
+document.querySelectorAll('input[data-weight-step="true"]').forEach(el => { if (!el.value) { el.value = '5'; localStorage.setItem(STORAGE_PREFIX + el.dataset.save, '5'); }});
+document.querySelectorAll('select[data-save$="-difficulty"]').forEach(el => { if (!localStorage.getItem(STORAGE_PREFIX + el.dataset.save)) { el.value = 'medium'; localStorage.setItem(STORAGE_PREFIX + el.dataset.save, 'medium'); }});
+</script>
+</body>
+</html>
