@@ -808,15 +808,6 @@
       </div>
       <div class="exercise-list" id="exerciseList"></div>
     </section>
-
-    <section class="section">
-      <div class="section-head">
-        <div>
-          <h2 class="section-title">TENS Machine</h2>
-        </div>
-      </div>
-      <div class="exercise-list" id="tensList"></div>
-    </section>
   </div>
 
   <div class="timer-flash" id="timerFlash" aria-hidden="true"></div>
@@ -900,6 +891,50 @@
 
     const PT_EXERCISES = [
       {
+        id: 'toes-down-stretch',
+        name: 'Toes Down Stretch',
+        meta: '5 reps x 30 second hold • twice a day',
+        tracking: 'grid',
+        stretch: true,
+        sets: 1,
+        reps: 5,
+        prepSeconds: STRETCH_PREP_SECONDS,
+        holdSeconds: 30
+      },
+      {
+        id: 'roll-ankle-from-toes',
+        name: 'Roll Ankle From Toes',
+        meta: '5 reps x 30 second hold • twice a day',
+        tracking: 'grid',
+        stretch: true,
+        sets: 1,
+        reps: 5,
+        prepSeconds: STRETCH_PREP_SECONDS,
+        holdSeconds: 30
+      },
+      {
+        id: 'sitting-ankle-toes-up',
+        name: 'Sitting Ankle (Toes Up)',
+        meta: '5 reps x 30 second hold • twice a day',
+        tracking: 'grid',
+        stretch: true,
+        sets: 1,
+        reps: 5,
+        prepSeconds: STRETCH_PREP_SECONDS,
+        holdSeconds: 30
+      },
+      {
+        id: 'toe-curls',
+        name: 'Toe Curls',
+        meta: '10 reps x 10 second hold • twice a day',
+        tracking: 'grid',
+        stretch: true,
+        sets: 1,
+        reps: 10,
+        prepSeconds: STRETCH_PREP_SECONDS,
+        holdSeconds: 10
+      },
+      {
         id: 'pull-heel-forefoot-stretch',
         name: 'Pull Heel Down / Pull Up on Forefoot Stretch',
         meta: '3 reps x 30 second hold • target 90s total • twice a day',
@@ -933,17 +968,6 @@
         holdSeconds: 30
       },
       {
-        id: 'single-leg-stance',
-        name: 'Single Leg Stance',
-        meta: '3 reps x 30 second hold • target 90s total • twice a day',
-        tracking: 'grid',
-        stretch: true,
-        sets: 1,
-        reps: 3,
-        prepSeconds: STRETCH_PREP_SECONDS,
-        holdSeconds: 30
-      },
-      {
         id: 'ankle-inversion',
         name: 'Ankle Inversion (In, Resistance Band)',
         meta: '2 sets x 20 reps • resistance band • twice a day',
@@ -958,14 +982,6 @@
         sets: 2
       },
       {
-        id: 'heel-toe-raise',
-        name: 'Heel & Toe Raise',
-        meta: '2 sets x 20 reps (4 x 5) • twice a day',
-        tracking: 'session',
-        sets: 2,
-        chunksPerSet: 4
-      },
-      {
         id: 'ankle-circles',
         name: 'Ankle Circles',
         meta: '2 sets x 20 reps • twice a day',
@@ -978,39 +994,29 @@
         meta: 'Cross legs, stabilize heel, twist ball of foot • 2 sets x 20 reps • twice a day',
         tracking: 'session',
         sets: 2
+      },
+      {
+        id: 'single-leg-stance',
+        name: 'Single Leg Stance',
+        meta: '3 reps x 30 second hold • target 90s total • twice a day',
+        tracking: 'grid',
+        stretch: true,
+        sets: 1,
+        reps: 3,
+        prepSeconds: STRETCH_PREP_SECONDS,
+        holdSeconds: 30
+      },
+      {
+        id: 'heel-toe-raise',
+        name: 'Heel & Toe Raise',
+        meta: '2 sets x 20 reps (4 x 5) • twice a day',
+        tracking: 'session',
+        sets: 2,
+        chunksPerSet: 4
       }
     ];
 
-    const TENS_EXERCISES = [
-      {
-        id: 'tens-near-toes',
-        name: 'Near Toes',
-        placement: 'Near toes',
-        mode: 'Suction cup mode',
-        defaultMinutes: 30
-      },
-      {
-        id: 'tens-ankle-bone',
-        name: 'Above and Below Ankle Bone',
-        placement: 'Above and below ankle bone',
-        mode: 'Suction cup mode',
-        defaultMinutes: 30
-      },
-      {
-        id: 'tens-incision-point',
-        name: 'On Incision Point',
-        placement: 'On incision point',
-        mode: 'Hand pounding mode',
-        defaultMinutes: 30
-      },
-      {
-        id: 'tens-top-incision-holes',
-        name: 'Above Top Incision Holes',
-        placement: 'Above top incision holes',
-        mode: 'Suction cup mode',
-        defaultMinutes: 30
-      }
-    ];
+    const TENS_EXERCISES = [];
 
     function todayKey(){
       const now = new Date();
@@ -1286,7 +1292,6 @@
 
     function renderPage(){
       document.getElementById('exerciseList').innerHTML = PT_EXERCISES.map(renderPtExercise).join('');
-      document.getElementById('tensList').innerHTML = TENS_EXERCISES.map(renderTensExercise).join('');
     }
 
     function saveField(el){
