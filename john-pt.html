@@ -839,7 +839,7 @@
     const PAGE_DAY_KEY = todayKey();
     const MANUAL_TIMER_DEFAULT = 20;
     const STRETCH_PREP_SECONDS = 5;
-    const AUTO_REST_SECONDS = 90;
+    const AUTO_REST_SECONDS = 60;
     const READY_OVERLAY_MIN_MS = 400;
     const STRETCH_END_FLASH_MS = 1150;
     const MOTIVATION_CHANCE = 0.32;
@@ -891,19 +891,15 @@
 
     const PT_EXERCISES = [
       {
-        id: 'toes-down-stretch',
-        name: 'Toes Down Stretch',
-        meta: '5 reps x 30 second hold • twice a day',
-        tracking: 'grid',
-        stretch: true,
-        sets: 1,
-        reps: 5,
-        prepSeconds: STRETCH_PREP_SECONDS,
-        holdSeconds: 30
+        id: 'flat-foot-toe-sweeps',
+        name: 'Flat Foot Toe Sweeps (Left / Right)',
+        meta: 'Foot flat, push toes far left then far right • 2 sets x 20 reps • twice a day',
+        tracking: 'session',
+        sets: 2
       },
       {
-        id: 'roll-ankle-from-toes',
-        name: 'Roll Ankle From Toes',
+        id: 'toes-down-stretch',
+        name: 'Toes Down Stretch',
         meta: '5 reps x 30 second hold • twice a day',
         tracking: 'grid',
         stretch: true,
@@ -926,13 +922,14 @@
       {
         id: 'toe-curls',
         name: 'Toe Curls',
-        meta: '10 reps x 10 second hold • twice a day',
+        meta: '10 reps x 10 second hold • 30 second rest • twice a day',
         tracking: 'grid',
         stretch: true,
         sets: 1,
         reps: 10,
         prepSeconds: STRETCH_PREP_SECONDS,
-        holdSeconds: 10
+        holdSeconds: 10,
+        restSeconds: 30
       },
       {
         id: 'pull-heel-forefoot-stretch',
@@ -942,6 +939,31 @@
         stretch: true,
         sets: 1,
         reps: 3,
+        prepSeconds: STRETCH_PREP_SECONDS,
+        holdSeconds: 30
+      },
+      {
+        id: 'ankle-circles',
+        name: 'Ankle Circles',
+        meta: '2 sets x 20 reps • twice a day',
+        tracking: 'session',
+        sets: 2
+      },
+      {
+        id: 'ankle-rotation',
+        name: 'Ankle Rotation',
+        meta: 'Cross legs, stabilize heel, twist ball of foot • 2 sets x 20 reps • twice a day',
+        tracking: 'session',
+        sets: 2
+      },
+      {
+        id: 'roll-ankle-from-toes',
+        name: 'Roll Ankle From Toes',
+        meta: '5 reps x 30 second hold • twice a day',
+        tracking: 'grid',
+        stretch: true,
+        sets: 1,
+        reps: 5,
         prepSeconds: STRETCH_PREP_SECONDS,
         holdSeconds: 30
       },
@@ -966,53 +988,6 @@
         reps: 3,
         prepSeconds: STRETCH_PREP_SECONDS,
         holdSeconds: 30
-      },
-      {
-        id: 'ankle-inversion',
-        name: 'Ankle Inversion (In, Resistance Band)',
-        meta: '2 sets x 20 reps • resistance band • twice a day',
-        tracking: 'session',
-        sets: 2
-      },
-      {
-        id: 'ankle-eversion',
-        name: 'Ankle Eversion (Out, Resistance Band)',
-        meta: '2 sets x 20 reps • resistance band • twice a day',
-        tracking: 'session',
-        sets: 2
-      },
-      {
-        id: 'ankle-circles',
-        name: 'Ankle Circles',
-        meta: '2 sets x 20 reps • twice a day',
-        tracking: 'session',
-        sets: 2
-      },
-      {
-        id: 'ankle-rotation',
-        name: 'Ankle Rotation',
-        meta: 'Cross legs, stabilize heel, twist ball of foot • 2 sets x 20 reps • twice a day',
-        tracking: 'session',
-        sets: 2
-      },
-      {
-        id: 'single-leg-stance',
-        name: 'Single Leg Stance',
-        meta: '3 reps x 30 second hold • target 90s total • twice a day',
-        tracking: 'grid',
-        stretch: true,
-        sets: 1,
-        reps: 3,
-        prepSeconds: STRETCH_PREP_SECONDS,
-        holdSeconds: 30
-      },
-      {
-        id: 'heel-toe-raise',
-        name: 'Heel & Toe Raise',
-        meta: '2 sets x 20 reps (4 x 5) • twice a day',
-        tracking: 'session',
-        sets: 2,
-        chunksPerSet: 4
       }
     ];
 
